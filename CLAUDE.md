@@ -44,3 +44,11 @@ Plugin improvement expert. Spawned by `/compound` in an isolated worktree. Analy
 
 ### compound
 Self-improvement loop. Trigger: `/compound` or "컴파운드". Analyzes conversation for workflow problems, searches reference plugins (superpowers, gstack, hoyeon, omc) for proven patterns, dispatches harness-sage to create a PR.
+
+### document
+작업 문서화. Trigger: `/document`, "문서화", 또는 커밋 후 자동 리마인드. 대화를 분석해서 worklog 작성 + spec SSOT 업데이트.
+
+## Hooks
+
+### commit-document-reminder (PostToolUse)
+`git commit` 감지 시 `/document` 리마인드 출력.
