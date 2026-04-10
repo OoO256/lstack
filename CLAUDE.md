@@ -18,3 +18,13 @@ A Claude Code plugin for development workflow automation.
 - Skills use YAML frontmatter with `name` and `description` fields
 - Design specs: `docs/lstack/specs/YYYY-MM-DD-<topic>-design.md`
 - Plans: `docs/lstack/plans/YYYY-MM-DD-<topic>.md`
+
+## Agents
+
+### harness-sage
+Plugin improvement expert. Spawned by `/compound` in an isolated worktree. Analyzes reference plugin patterns and implements improvements to lstack via issue + PR.
+
+## Skills
+
+### compound
+Self-improvement loop. Trigger: `/compound` or "컴파운드". Analyzes conversation for workflow problems, searches reference plugins (superpowers, gstack, hoyeon, omc) for proven patterns, dispatches harness-sage to create a PR.
