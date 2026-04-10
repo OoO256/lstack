@@ -84,7 +84,21 @@ Agent({
 
 Wait for the agent to complete. It will return issue and PR URLs.
 
-### Phase 4: Report
+### Phase 4: Documentation
+
+After harness-sage completes:
+
+1. **Worklog 기록** — `docs/worklog/YYYY-MM-DD-<topic>.md` 작성:
+   - 어떤 문제가 있었는지
+   - 어떤 레퍼런스를 참고했는지
+   - 어떤 개선을 만들었는지 (issue/PR 링크 포함)
+
+2. **Spec 업데이트** — 이번 개선이 기존 spec에 영향을 주면 해당 `docs/spec/<TOPIC>.md` 반영:
+   - 새 컨벤션이 생겼으면 `CONVENTIONS.md` 업데이트
+   - 새 설계 원칙이 생겼으면 `PRINCIPLE.md` 업데이트
+   - 해당 spec이 없으면 새로 생성
+
+### Phase 5: Report
 
 Report to the user:
 
@@ -95,6 +109,8 @@ Problem: <one-line summary>
 Reference: <which plugin pattern was used>
 Issue: <URL>
 PR: <URL>
+Worklog: <path>
+Spec updated: <path or "none">
 
 Review the PR when ready.
 ```
