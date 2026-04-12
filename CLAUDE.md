@@ -48,7 +48,13 @@ Self-improvement loop. Trigger: `/compound` or "컴파운드". Analyzes conversa
 ### document
 작업 문서화. Trigger: `/document`, "문서화", 또는 커밋 후 자동 리마인드. 대화를 분석해서 worklog 작성 + spec SSOT 업데이트.
 
+### pm
+프로젝트 오케스트레이터. Trigger: `/pm`, "프로젝트 시작". Interview → Design → Plan (tasks.json) → Execute (agent pool) → Verify (병렬 AC 검증) → Document → Compound. `docs/spec/PRINCIPLE.md` 원칙 준수.
+
 ## Hooks
 
 ### commit-document-reminder (PostToolUse)
 `git commit` 감지 시 `/document` 리마인드 출력.
+
+### validate-tasks (PostToolUse)
+`tasks.json` Write/Edit 시 check-jsonschema로 스키마 validation.

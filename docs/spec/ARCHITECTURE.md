@@ -57,3 +57,50 @@ Harness-Sage (격리된 worktree)
 - **Worktree 격리**: 에이전트가 사용자의 작업 브랜치에 영향을 주지 않음
 - **GitHub URL 기반 레퍼런스**: git-tracked, portable. 로컬 클론 불필요
 - **역할 분리**: 스킬(메인 컨텍스트)이 분석, 에이전트(worktree)가 구현
+
+## PM Orchestration
+
+사용자 요청을 design → plan → execute → verify 하는 핵심 워크플로우.
+
+### Flow
+
+```
+사용자 요청
+    │
+    ▼
+PM Skill (메인 컨텍스트)
+    │  Phase 1: Interview — 의도 파악
+    │  Phase 2: Design — 코드 탐색, 구현 시뮬레이션, 설계, 테스트 시나리오
+    │  Phase 3: Plan — tasks.json 작성 + 사용자 승인
+    │  Phase 4: Execute — task별 agent dispatch (pool에서 선택)
+    │  Phase 5: Verify — AC별 외부 agent 병렬 dispatch + ralph-loop
+    │  Phase 6: Document — /document 호출 + tasks.json 아카이빙
+    │  Phase 7: Compound — 하니스 문제 발견 시 /compound로 개선 PR
+    │
+    ▼
+tasks.json (단일 SOT)
+    │
+    ├─ Agent Pool (구현) ──── general-purpose, oh-my-claudecode:test-engineer, ...
+    └─ Verify Pool (검증) ─── superpowers:code-reviewer, oh-my-claudecode:test-engineer
+```
+
+### tasks.json
+
+단일 SOT. 스키마: `skills/pm/tasks-schema.json`.
+
+| Field | Description |
+|-------|-------------|
+| goal | 사용자 의도 한 줄 요약 |
+| requirements[] | id, type (requirement\|design_decision), content, rationale?, status, acceptance_criteria[] |
+| requirements[].acceptance_criteria[] | id, check, verify_agent, status (pending/pass/fail) |
+| tasks[] | id, action, status, agent, depends_on, acceptance_criteria[], worklog |
+| tasks[].acceptance_criteria[] | id, check, verify_agent, status (pending/pass/fail) |
+| tasks[].worklog | summary, decisions, insights, changes |
+
+### Components
+
+| Component | Path | Role |
+|-----------|------|------|
+| pm skill | `skills/pm/SKILL.md` | 7-phase 오케스트레이션 |
+| tasks schema | `skills/pm/tasks-schema.json` | 스키마 정의 |
+| validation hook | `hooks/scripts/validate-tasks.sh` | Write/Edit 시 스키마 체크 |
