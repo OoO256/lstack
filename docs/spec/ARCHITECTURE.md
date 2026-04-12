@@ -22,8 +22,8 @@ lstack/
 ## Skills
 
 ### pm
-- **경로**: `skills/pm/SKILL.md`
-- **트리거**: `/pm`, "프로젝트 시작", "이거 만들어", "이거 고쳐"
+- **경로**: `skills/start/SKILL.md`
+- **트리거**: `/start`, "시작", "프로젝트 시작", "이거 만들어", "이거 고쳐"
 - **역할**: 가벼운 6-phase 오케스트레이터. 각 phase를 전문 agent에게 위임하고 tasks.json 상태만 추적.
 - **워크플로우**: Interview → Design (architect → test-planner → planner) → Execute+Verify (orchestrator) → Document → Compound
 - **원칙**: `docs/spec/PRINCIPLE.md` 참조
@@ -138,7 +138,7 @@ Compound Skill (메인 컨텍스트)
 
 ## tasks.json
 
-단일 SOT. 스키마: `skills/pm/tasks-schema.json`.
+단일 SOT. 스키마: `skills/start/tasks-schema.json`.
 
 | Field | Description |
 |-------|-------------|

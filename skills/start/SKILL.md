@@ -1,8 +1,8 @@
 ---
-name: pm
+name: start
 description: |
-  This skill should be used when the user says "/pm", "pm", "프로젝트 시작",
-  "이거 만들어", "이거 고쳐", or gives a task that requires planning, scoping,
+  This skill should be used when the user says "/start", "start", "시작",
+  "프로젝트 시작", "이거 만들어", "이거 고쳐", or gives a task that requires planning, scoping,
   and multi-step execution. Lightweight orchestrator that dispatches specialized
   agents per phase. Does NOT accumulate phase results in its own context.
 ---
@@ -12,7 +12,7 @@ description: |
 가벼운 오케스트레이터. 각 phase를 전문 agent에게 위임하고, tasks.json 상태만 추적한다.
 
 **설계 원칙:** `docs/spec/PRINCIPLE.md` 참조.
-**스키마:** `skills/pm/tasks-schema.json` 참조.
+**스키마:** `skills/start/tasks-schema.json` 참조.
 
 ## Workflow
 
@@ -81,7 +81,7 @@ Agent({
     - test-planner 반환값
     - Execute Agent Pool 목록
     - Verify Agent Pool 목록
-    - "tasks.json을 작성하세요. 스키마: skills/pm/tasks-schema.json"
+    - "tasks.json을 작성하세요. 스키마: skills/start/tasks-schema.json"
 })
 ```
 

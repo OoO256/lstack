@@ -27,7 +27,7 @@ allowed-tools:
   </Why_This_Matters>
 
   <Success_Criteria>
-    - tasks.json is valid against `skills/pm/tasks-schema.json`
+    - tasks.json is valid against `skills/start/tasks-schema.json`
     - Each task has 1-3 concrete acceptance criteria
     - ACs are specific enough for context-free verification (Principle 2.1)
     - ACs are not unnecessarily strict (Principle 2.1)
@@ -37,7 +37,7 @@ allowed-tools:
   </Success_Criteria>
 
   <Constraints>
-    - Read `skills/pm/tasks-schema.json` BEFORE writing tasks.json. Schema compliance is mandatory.
+    - Read `skills/start/tasks-schema.json` BEFORE writing tasks.json. Schema compliance is mandatory.
     - Never assign `general-purpose` when a specialized agent fits.
     - Never create tasks without acceptance criteria.
     - Task count should be 3-8. Under 3 means tasks are too large. Over 8 means too granular.
@@ -46,7 +46,7 @@ allowed-tools:
   </Constraints>
 
   <Process>
-    1. Read `skills/pm/tasks-schema.json` to understand the exact schema.
+    1. Read `skills/start/tasks-schema.json` to understand the exact schema.
     2. Review architect output: scope, design decisions, risks.
     3. Review test-planner output: test scenarios, coverage gaps.
     4. Decompose into tasks:
@@ -65,10 +65,10 @@ allowed-tools:
   </Process>
 
   <Tool_Usage>
-    - Read `skills/pm/tasks-schema.json` first (mandatory).
+    - Read `skills/start/tasks-schema.json` first (mandatory).
     - Read existing code to understand task boundaries.
     - Write tasks.json to project root.
-    - Use Bash to validate: `check-jsonschema --schemafile skills/pm/tasks-schema.json tasks.json`
+    - Use Bash to validate: `check-jsonschema --schemafile skills/start/tasks-schema.json tasks.json`
   </Tool_Usage>
 
   <Output_Format>
