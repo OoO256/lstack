@@ -23,7 +23,7 @@ description: |
 
 ### Phase 2: Worklog 작성
 
-`docs/worklog/YYYY-MM-DD-<topic>.md` 작성:
+`docs/worklog/YYYY-MM-DD-<topic>/summary.md` 작성:
 
 ```markdown
 # YYYY-MM-DD: <한줄 제목>
@@ -40,7 +40,7 @@ description: |
 ```
 
 규칙:
-- 같은 날짜에 이미 worklog가 있으면 기존 파일에 추가 (새 파일 만들지 않음)
+- 같은 날짜+주제에 이미 worklog 디렉토리가 있으면 기존 summary.md에 추가
 - 간결하게. 코드 블록이나 상세 설명은 불필요.
 
 ### Phase 3: Spec 업데이트

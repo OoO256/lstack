@@ -12,9 +12,8 @@ lstack/
 ├── commands/                     # 슬래시 커맨드 정의 (.md)
 ├── hooks/hooks.json              # 이벤트 훅 등록
 ├── docs/
-│   ├── worklog/                  # 날짜별 작업 로그
 │   ├── spec/                     # 분야별 SSOT 문서
-│   └── plan/                     # 구현 계획
+│   └── worklog/                  # 프로젝트 단위 작업 디렉토리
 └── tests/                        # 테스트
 ```
 
@@ -144,7 +143,7 @@ Compound Skill (메인 컨텍스트)
 | Field | Description |
 |-------|-------------|
 | goal | 사용자 의도 한 줄 요약 |
-| design | architect 분석 결과 파일 경로 (`.lstack/design.md`) |
+| design | architect 분석 결과 파일 경로 (`docs/worklog/YYYY-MM-DD-<goal>/design.md`) |
 | requirements[] | id, type (requirement\|design_decision), content, rationale?, status, acceptance_criteria[] |
 | requirements[].acceptance_criteria[] | id, check, verify_agent, status (pending/pass/fail) |
 | tasks[] | id, action, status, agent, depends_on, acceptance_criteria[], worklog |
