@@ -1,5 +1,5 @@
 ---
-name: plan
+name: write-plan-md
 description: |
   This skill should be used by any agent that needs to read or write plan.md.
   Defines the plan.md structure, section conventions, and editing rules.

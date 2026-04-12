@@ -29,6 +29,7 @@ disallowedTools: Edit
   </Success_Criteria>
 
   <Constraints>
+    - Before modifying plan.md, invoke `lstack:write-plan-md` skill for structure and rules.
     - Do not modify source code files. Only write to plan.md.
     - Never judge code you have not opened and read.
     - Never provide generic advice that could apply to any codebase.

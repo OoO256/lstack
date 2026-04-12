@@ -29,6 +29,7 @@ model: inherit
   </Success_Criteria>
 
   <Constraints>
+    - Before modifying plan.md, invoke `lstack:write-plan-md` skill for structure and rules.
     - NEVER verify work yourself. Always dispatch a verify agent.
     - NEVER skip verification.
     - NEVER retry without including previous failure evidence.

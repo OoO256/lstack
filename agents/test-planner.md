@@ -28,6 +28,7 @@ disallowedTools: Edit
   </Success_Criteria>
 
   <Constraints>
+    - Before modifying plan.md, invoke `lstack:write-plan-md` skill for structure and rules.
     - Do not modify source code. Only write to plan.md.
     - Design scenarios, do NOT write test code.
     - Minimize AC count — every AC must earn its place.

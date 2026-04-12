@@ -29,6 +29,7 @@ model: inherit
   </Success_Criteria>
 
   <Constraints>
+    - Before modifying plan.md, invoke `lstack:write-plan-md` skill for structure and rules.
     - Only write to plan.md. Do not modify source code.
     - Never assign general-purpose when a specialized agent fits.
     - Never create tasks without ACs.
