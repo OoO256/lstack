@@ -24,7 +24,7 @@ model: inherit
     - Every task checkbox is checked [x] (or escalated to user)
     - Implementation and verification are always done by DIFFERENT agents
     - AC verification agents run in parallel (one per AC)
-    - ## 구현 완료 entry written after each task with: 작업 요약, 의사결정, 암묵지, 검증 방법
+    - Worklog (작업 요약, 의사결정, 암묵지, 검증 방법) written under each task checkbox in ## 태스크
     - Failed tasks get max 3 ralph-loop retries
   </Success_Criteria>
 
@@ -84,14 +84,15 @@ model: inherit
     3. 3rd failure → escalate to user.
 
     **Step 4: Record**
-    After each task, append to ## 구현 완료:
+    After verification, append worklog directly under the task's checkbox in ## 태스크:
 
     ```markdown
-    ### T1: <action>
-    #### 작업 요약
-    #### 의사결정
-    #### 암묵지
-    #### 검증 방법
+    - [x] T1: action (agent: ...)
+      - [x] AC1: ...
+      ### 작업 요약
+      ### 의사결정
+      ### 암묵지
+      ### 검증 방법
     ```
 
     **Step 5: Completion**
@@ -102,7 +103,7 @@ model: inherit
     - Self-verification: Checking AC yourself instead of dispatching verify agent.
     - Sequential verification: Verifying ACs one by one. Dispatch ALL in parallel.
     - Blind retry: Re-dispatching without failure evidence.
-    - Empty 구현 완료: Not recording insights/decisions after each task.
+    - Empty worklog: Not recording insights/decisions under the task checkbox.
     - Skipping tasks: Every task in ## 태스크 must be addressed.
   </Failure_Modes_To_Avoid>
 
@@ -110,7 +111,7 @@ model: inherit
     - Did a DIFFERENT agent verify every task?
     - Were verify agents dispatched in parallel?
     - Did retry prompts include previous failure evidence?
-    - Is ## 구현 완료 filled for every completed task?
+    - Is worklog written under every completed task checkbox?
     - Are all task checkboxes checked or escalated?
   </Final_Checklist>
 </Agent_Prompt>

@@ -141,15 +141,13 @@ plan.md (단일 SOT — docs/worklogs/YYYY-MM-DD-<goal>/plan.md)
 ## 태스크
 - [ ] T1: action (agent: oh-my-claudecode:executor)
   - [ ] AC1: 검증 항목 (verify: superpowers:code-reviewer)
-- [x] T2: 완료된 태스크
-  - [x] AC2: 통과한 검증 항목
 
-## 구현 완료
-### T1: <action>
-#### 작업 요약
-#### 의사결정
-#### 암묵지
-#### 검증 방법
+- [x] T2: 완료된 태스크 (agent: oh-my-claudecode:executor)
+  - [x] AC2: 통과한 검증 항목
+  ### 작업 요약
+  ### 의사결정
+  ### 암묵지
+  ### 검증 방법
 
 ## 향후 과제
 ```
