@@ -113,15 +113,20 @@ Agent({
 PM은 orchestrator 완료 후 plan.md를 읽어서 전체 상태만 확인.
 모든 task 체크박스가 [x]가 아니면 사용자에게 에스컬레이션.
 
-## Phase 5: Document
+## Phase 5: Spec 업데이트
 
-```
-/document 스킬 호출
-```
+작업 결과가 spec SSOT에 영향을 주는지 확인하고 업데이트한다.
+
+1. plan.md의 ## 태스크 worklog를 읽는다.
+2. `docs/spec/` 의 기존 문서를 확인:
+   - 아키텍처 변경 → `ARCHITECTURE.md` 업데이트
+   - 원칙 변경 → `PRINCIPLE.md` 업데이트
+   - 해당 없으면 → 스킵
+3. 기존 문서를 업데이트. 겹치는 내용은 중복 추가하지 않음.
 
 ## Phase 6: Compound
 
-plan.md의 ## 구현 완료를 읽고 하니스 문제를 식별:
+plan.md의 ## 태스크 worklog를 읽고 하니스 문제를 식별:
 - 비효율적이었던 워크플로우
 - 부적절했던 agent 선택
 - 반복 실패 패턴

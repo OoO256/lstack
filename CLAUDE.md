@@ -15,8 +15,7 @@ A Claude Code plugin for development workflow automation.
 - 경로: `docs/worklogs/YYYY-MM-DD-<한일>/`
 - 세션에서 의미 있는 작업을 했으면 반드시 기록
 - 디렉토리 구성:
-  - `plan.md` — 단일 SOT. 설계, 요구사항, 태스크, 구현 완료, 향후 과제 모두 포함
-  - `summary.md` — /document 스킬이 작성하는 간결한 작업 요약
+  - `plan.md` — 단일 SOT. 설계, 요구사항, 태스크, worklog, 향후 과제 모두 포함
 
 ### spec (SSOT 문서)
 - 경로: `docs/spec/<TOPIC>.md` (예: `PRINCIPLE.md`, `ARCHITECTURE.md`)
