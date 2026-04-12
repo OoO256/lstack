@@ -60,7 +60,8 @@ Harness-Sage (격리된 worktree)
 
 ## PM Orchestration
 
-사용자 요청을 design → plan → execute → verify 하는 핵심 워크플로우.
+사용자 요청을 interview → design → execute → verify 하는 핵심 워크플로우.
+PM은 가벼운 오케스트레이터 — 각 phase를 전문 agent에게 위임하고 tasks.json 상태만 추적.
 
 ### Flow
 
@@ -68,20 +69,22 @@ Harness-Sage (격리된 worktree)
 사용자 요청
     │
     ▼
-PM Skill (메인 컨텍스트)
-    │  Phase 1: Interview — 의도 파악
-    │  Phase 2: Design — 코드 탐색, 구현 시뮬레이션, 설계, 테스트 시나리오
-    │  Phase 3: Plan — tasks.json 작성 + 사용자 승인
-    │  Phase 4: Execute — task별 agent dispatch (pool에서 선택)
-    │  Phase 5: Verify — AC별 외부 agent 병렬 dispatch + ralph-loop
-    │  Phase 6: Document — /document 호출 + tasks.json 아카이빙
-    │  Phase 7: Compound — 하니스 문제 발견 시 /compound로 개선 PR
+PM Skill (가벼운 오케스트레이터)
+    │  Phase 1: Interview ─── hoyeon:interviewer
+    │  Phase 2: Design
+    │     2.1-2.3 architect ── 수정 범위 + 시뮬레이션 + 패턴
+    │     2.4 test-planner ─── 최소 테스트 시나리오
+    │     2.5 planner ──────── tasks.json 작성 (사용자 승인)
+    │  Phase 3: Execute ────── orchestrator (agent pool dispatch)
+    │  Phase 4: Verify ─────── orchestrator (AC별 병렬 검증 + ralph-loop)
+    │  Phase 5: Document ───── /document
+    │  Phase 6: Compound ───── /compound (하니스 문제 시)
     │
     ▼
 tasks.json (단일 SOT)
     │
-    ├─ Agent Pool (구현) ──── general-purpose, oh-my-claudecode:test-engineer, ...
-    └─ Verify Pool (검증) ─── superpowers:code-reviewer, oh-my-claudecode:test-engineer
+    ├─ Execute Pool ── omc:executor, omc:test-engineer, omc:debugger, ...
+    └─ Verify Pool ─── superpowers:code-reviewer, omc:verifier, omc:critic, ...
 ```
 
 ### tasks.json
@@ -101,6 +104,10 @@ tasks.json (단일 SOT)
 
 | Component | Path | Role |
 |-----------|------|------|
-| pm skill | `skills/pm/SKILL.md` | 7-phase 오케스트레이션 |
+| pm skill | `skills/pm/SKILL.md` | 가벼운 6-phase 오케스트레이터 |
+| architect agent | `agents/architect.md` | Design 2.1-2.3: 구조 설계 |
+| test-planner agent | `agents/test-planner.md` | Design 2.4: 테스트 시나리오 |
+| planner agent | `agents/planner.md` | Design 2.5: tasks.json 작성 |
+| orchestrator agent | `agents/orchestrator.md` | Phase 3+4: 실행 + 검증 |
 | tasks schema | `skills/pm/tasks-schema.json` | 스키마 정의 |
 | validation hook | `hooks/scripts/validate-tasks.sh` | Write/Edit 시 스키마 체크 |

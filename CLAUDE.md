@@ -40,6 +40,18 @@ A Claude Code plugin for development workflow automation.
 ### harness-sage
 Plugin improvement expert. Spawned by `/compound` in an isolated worktree. Analyzes reference plugin patterns and implements improvements to lstack via issue + PR.
 
+### architect
+Design phase (2.1-2.3). 수정 범위 파악 + 구현 시뮬레이션 + 디자인 패턴 결정. READ-ONLY.
+
+### test-planner
+Design phase (2.4). 최소 테스트 시나리오 설계. architect 결과를 입력으로. 테스트 코드는 작성하지 않음.
+
+### planner
+Design phase (2.5). architect + test-planner 결과 + agent pool 목록을 받아 tasks.json 작성.
+
+### orchestrator
+Execution phase (3+4). tasks.json을 읽고 task별 agent dispatch + AC별 검증 + ralph-loop.
+
 ## Skills
 
 ### compound
@@ -49,7 +61,7 @@ Self-improvement loop. Trigger: `/compound` or "컴파운드". Analyzes conversa
 작업 문서화. Trigger: `/document`, "문서화", 또는 커밋 후 자동 리마인드. 대화를 분석해서 worklog 작성 + spec SSOT 업데이트.
 
 ### pm
-프로젝트 오케스트레이터. Trigger: `/pm`, "프로젝트 시작". Interview → Design → Plan (tasks.json) → Execute (agent pool) → Verify (병렬 AC 검증) → Document → Compound. `docs/spec/PRINCIPLE.md` 원칙 준수.
+가벼운 오케스트레이터. Trigger: `/pm`, "프로젝트 시작". 각 phase를 전문 agent에게 위임. Interview → Design (architect → test-planner → planner) → Execute+Verify (orchestrator) → Document → Compound. `docs/spec/PRINCIPLE.md` 원칙 준수.
 
 ## Hooks
 
