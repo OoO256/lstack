@@ -23,7 +23,7 @@ description: |
 
 ### Phase 2: Worklog 작성
 
-`docs/worklog/YYYY-MM-DD-<topic>/summary.md` 작성:
+`docs/worklogs/YYYY-MM-DD-<topic>/summary.md` 작성:
 
 ```markdown
 # YYYY-MM-DD: <한줄 제목>
@@ -59,6 +59,6 @@ description: |
 ### Phase 4: 커밋
 
 ```bash
-git add docs/worklog/ docs/spec/
+git add docs/worklogs/ docs/spec/
 git commit -m "docs: update worklog and specs for <topic>"
 ```

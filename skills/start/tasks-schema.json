@@ -9,7 +9,7 @@
     },
     "design": {
       "type": "string",
-      "description": "architect 분석 결과 파일 경로 (예: docs/worklog/YYYY-MM-DD-<goal>/design.md)"
+      "description": "architect 분석 결과 파일 경로 (예: docs/worklogs/YYYY-MM-DD-<goal>/design.md)"
     },
     "requirements": {
       "type": "array",

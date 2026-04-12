@@ -66,7 +66,7 @@ disallowedTools: Edit
     자유로운 markdown 형식으로 분석을 작성한다. 코드 스니펫, 다이어그램, 맥락 설명을 자유롭게 포함.
     마지막에 downstream agent가 참조할 구조화된 요약을 붙인다.
 
-    **파일로 저장**: `docs/worklog/YYYY-MM-DD-<goal>/design.md`에 Write.
+    **파일로 저장**: `docs/worklogs/YYYY-MM-DD-<goal>/design.md`에 Write.
 
     ```markdown
     # Design: <goal 한 줄>

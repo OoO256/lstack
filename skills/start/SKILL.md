@@ -64,7 +64,7 @@ Agent({
   prompt: <포함>
     - goal
     - requirements 초안
-    - "docs/worklog/YYYY-MM-DD-<goal>/design.md 를 읽고 architect의 분석을 참고하세요"
+    - "docs/worklogs/YYYY-MM-DD-<goal>/design.md 를 읽고 architect의 분석을 참고하세요"
     - "최소 테스트 시나리오 설계. JSON으로 반환: test_scenarios, coverage_gaps"
 })
 ```
@@ -77,7 +77,7 @@ Agent({
   prompt: <포함>
     - goal
     - requirements 초안
-    - "docs/worklog/YYYY-MM-DD-<goal>/design.md 를 읽고 architect의 분석을 참고하세요"
+    - "docs/worklogs/YYYY-MM-DD-<goal>/design.md 를 읽고 architect의 분석을 참고하세요"
     - test-planner 반환값
     - Execute Agent Pool 목록
     - Verify Agent Pool 목록
@@ -111,7 +111,7 @@ PM은 executor 완료 후 tasks.json을 읽어서 전체 상태만 확인.
 
 추가로 tasks.json을 worklog 디렉토리에 아카이빙:
 ```bash
-cp tasks.json docs/worklog/YYYY-MM-DD-<goal>/tasks.json
+cp tasks.json docs/worklogs/YYYY-MM-DD-<goal>/tasks.json
 ```
 
 ## Phase 6: Compound

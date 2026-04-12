@@ -88,7 +88,7 @@ Wait for the agent to complete. It will return issue and PR URLs.
 
 After harness-sage completes:
 
-1. **Worklog 기록** — `docs/worklog/YYYY-MM-DD-<topic>.md` 작성:
+1. **Worklog 기록** — `docs/worklogs/YYYY-MM-DD-<topic>.md` 작성:
    - 어떤 문제가 있었는지
    - 어떤 레퍼런스를 참고했는지
    - 어떤 개선을 만들었는지 (issue/PR 링크 포함)

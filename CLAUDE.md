@@ -12,7 +12,7 @@ A Claude Code plugin for development workflow automation.
 ## Docs Rules
 
 ### worklog (프로젝트 단위 작업 디렉토리)
-- 경로: `docs/worklog/YYYY-MM-DD-<한일>/`
+- 경로: `docs/worklogs/YYYY-MM-DD-<한일>/`
 - 세션에서 의미 있는 작업을 했으면 반드시 기록
 - 디렉토리 구성:
   - `summary.md` — 작업 요약, 결정사항, 간결하게
