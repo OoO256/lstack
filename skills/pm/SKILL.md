@@ -64,7 +64,7 @@ Agent({
   prompt: <포함>
     - goal
     - requirements 초안
-    - architect의 반환값 (scope, design_decisions, risks)
+    - ".lstack/design.md 를 읽고 architect의 분석을 참고하세요"
     - "최소 테스트 시나리오 설계. JSON으로 반환: test_scenarios, coverage_gaps"
 })
 ```
@@ -77,7 +77,7 @@ Agent({
   prompt: <포함>
     - goal
     - requirements 초안
-    - architect 반환값
+    - ".lstack/design.md 를 읽고 architect의 분석을 참고하세요"
     - test-planner 반환값
     - Execute Agent Pool 목록
     - Verify Agent Pool 목록

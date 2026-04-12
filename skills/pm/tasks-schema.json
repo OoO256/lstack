@@ -7,6 +7,10 @@
       "type": "string",
       "description": "사용자 의도 한 줄 요약"
     },
+    "design": {
+      "type": "string",
+      "description": "architect 분석 결과 파일 경로 (예: .lstack/design.md)"
+    },
     "requirements": {
       "type": "array",
       "description": "사용자 요구사항 + 설계 결정사항. 모든 task는 이를 충족해야 한다.",

@@ -5,7 +5,7 @@ description: |
   simulates implementation, and decides on clean design patterns.
   Dispatched by PM skill. READ-ONLY — does not modify code.
 model: inherit
-disallowedTools: Write, Edit
+disallowedTools: Edit
 ---
 
 <Agent_Prompt>
@@ -63,29 +63,31 @@ disallowedTools: Write, Edit
   </Tool_Usage>
 
   <Output_Format>
-    Return a JSON object with exactly this structure:
+    자유로운 markdown 형식으로 분석을 작성한다. 코드 스니펫, 다이어그램, 맥락 설명을 자유롭게 포함.
+    마지막에 downstream agent가 참조할 구조화된 요약을 붙인다.
 
-    ```json
-    {
-      "scope": {
-        "files_to_modify": ["path/to/file.ts:10-50 — reason"],
-        "files_to_create": ["path/to/new.ts — purpose"],
-        "dependencies_affected": ["module — how affected"]
-      },
-      "design_decisions": [
-        {
-          "decision": "concrete decision",
-          "rationale": "why this approach",
-          "alternatives_considered": ["alt1 — why rejected", "alt2 — why rejected"]
-        }
-      ],
-      "risks": [
-        "specific risk or edge case — how it could manifest"
-      ],
-      "existing_patterns": [
-        "pattern found in codebase — where (file:line)"
-      ]
-    }
+    **파일로 저장**: `.lstack/design.md`에 Write.
+
+    ```markdown
+    # Design: <goal 한 줄>
+
+    ## Analysis
+    (자유 형식 — 깊이 있는 분석, 코드 스니펫, 영향 추적, 맥락 설명)
+
+    ## Summary
+
+    ### Scope
+    - `path/to/file.ts:10-50` — 수정 이유
+    - `path/to/new.ts` — 생성 목적
+
+    ### Design Decisions
+    - **결정 내용** — 근거. 대안: X (기각 이유), Y (기각 이유)
+
+    ### Existing Patterns
+    - 패턴 설명 — `file:line` 참조
+
+    ### Risks
+    - 구체적 위험 — 어떻게 발현될 수 있는지
     ```
   </Output_Format>
 

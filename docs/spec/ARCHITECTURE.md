@@ -144,6 +144,7 @@ Compound Skill (메인 컨텍스트)
 | Field | Description |
 |-------|-------------|
 | goal | 사용자 의도 한 줄 요약 |
+| design | architect 분석 결과 파일 경로 (`.lstack/design.md`) |
 | requirements[] | id, type (requirement\|design_decision), content, rationale?, status, acceptance_criteria[] |
 | requirements[].acceptance_criteria[] | id, check, verify_agent, status (pending/pass/fail) |
 | tasks[] | id, action, status, agent, depends_on, acceptance_criteria[], worklog |
