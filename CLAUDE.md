@@ -7,10 +7,7 @@ A Claude Code plugin for development workflow automation.
 모든 상세 문서는 `docs/spec/`에 있다. 필요할 때 참조.
 
 - [PRINCIPLE.md](docs/spec/PRINCIPLE.md) — 하니스 구현 원칙
-- [ARCHITECTURE.md](docs/spec/ARCHITECTURE.md) — 플러그인 구조, PM 워크플로우, 데이터 흐름
-- [AGENTS.md](docs/spec/AGENTS.md) — 내부/외부 에이전트 카탈로그, agent pool
-- [SKILLS.md](docs/spec/SKILLS.md) — 스킬 목록 (pm, compound, document)
-- [HOOKS.md](docs/spec/HOOKS.md) — 훅 목록 (commit-document-reminder, validate-tasks)
+- [ARCHITECTURE.md](docs/spec/ARCHITECTURE.md) — 플러그인 구조, skills, agents, hooks, PM 워크플로우, tasks.json 스키마
 
 ## Docs Rules
 
