@@ -2,21 +2,15 @@
 
 A Claude Code plugin for development workflow automation.
 
-## Structure
+## Specs (SSOT)
 
-- `skills/` — Skill definitions (each skill is a directory with `SKILL.md`)
-- `agents/` — Agent definitions (`.md` files with YAML frontmatter)
-- `commands/` — Slash command definitions (`.md` files)
-- `hooks/` — Event hooks registered in `hooks.json`
-- `docs/worklog/` — 날짜별 작업 로그
-- `docs/spec/` — 분야별 SSOT 문서 (누적 업데이트)
-- `docs/plan/` — 구현 계획 문서
-- `tests/` — Tests for skills and hooks
+모든 상세 문서는 `docs/spec/`에 있다. 필요할 때 참조.
 
-## Conventions
-
-- Follow Claude Code plugin conventions (`.claude-plugin/plugin.json` manifest)
-- Skills use YAML frontmatter with `name` and `description` fields
+- [PRINCIPLE.md](docs/spec/PRINCIPLE.md) — 하니스 구현 원칙
+- [ARCHITECTURE.md](docs/spec/ARCHITECTURE.md) — 플러그인 구조, PM 워크플로우, 데이터 흐름
+- [AGENTS.md](docs/spec/AGENTS.md) — 내부/외부 에이전트 카탈로그, agent pool
+- [SKILLS.md](docs/spec/SKILLS.md) — 스킬 목록 (pm, compound, document)
+- [HOOKS.md](docs/spec/HOOKS.md) — 훅 목록 (commit-document-reminder, validate-tasks)
 
 ## Docs Rules
 
@@ -34,39 +28,3 @@ A Claude Code plugin for development workflow automation.
 ### plan (구현 계획)
 - 경로: `docs/plan/YYYY-MM-DD-<feature>.md`
 - 구현 전 계획, 구현 후에는 worklog로 결과 기록
-
-## Agents
-
-### harness-sage
-Plugin improvement expert. Spawned by `/compound` in an isolated worktree. Analyzes reference plugin patterns and implements improvements to lstack via issue + PR.
-
-### architect
-Design phase (2.1-2.3). 수정 범위 파악 + 구현 시뮬레이션 + 디자인 패턴 결정. READ-ONLY.
-
-### test-planner
-Design phase (2.4). 최소 테스트 시나리오 설계. architect 결과를 입력으로. 테스트 코드는 작성하지 않음.
-
-### planner
-Design phase (2.5). architect + test-planner 결과 + agent pool 목록을 받아 tasks.json 작성.
-
-### orchestrator
-Execution phase (3+4). tasks.json을 읽고 task별 agent dispatch + AC별 검증 + ralph-loop.
-
-## Skills
-
-### compound
-Self-improvement loop. Trigger: `/compound` or "컴파운드". Analyzes conversation for workflow problems, searches reference plugins (superpowers, gstack, hoyeon, omc) for proven patterns, dispatches harness-sage to create a PR.
-
-### document
-작업 문서화. Trigger: `/document`, "문서화", 또는 커밋 후 자동 리마인드. 대화를 분석해서 worklog 작성 + spec SSOT 업데이트.
-
-### pm
-가벼운 오케스트레이터. Trigger: `/pm`, "프로젝트 시작". 각 phase를 전문 agent에게 위임. Interview → Design (architect → test-planner → planner) → Execute+Verify (orchestrator) → Document → Compound. `docs/spec/PRINCIPLE.md` 원칙 준수.
-
-## Hooks
-
-### commit-document-reminder (PostToolUse)
-`git commit` 감지 시 `/document` 리마인드 출력.
-
-### validate-tasks (PostToolUse)
-`tasks.json` Write/Edit 시 check-jsonschema로 스키마 validation.
