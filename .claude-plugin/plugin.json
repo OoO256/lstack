@@ -1,5 +1,18 @@
 {
   "name": "lstack",
-  "description": "Personal development workflow harness — skills, agents, hooks, and commands",
-  "version": "0.1.0"
+  "description": "Personal development workflow harness — PM orchestration, design, execution, verification",
+  "version": "0.1.0",
+  "author": {
+    "name": "Yonguk Lee"
+  },
+  "homepage": "https://github.com/OoO256/lstack",
+  "repository": "https://github.com/OoO256/lstack",
+  "license": "MIT",
+  "keywords": [
+    "pm",
+    "orchestration",
+    "workflow",
+    "design",
+    "verification"
+  ]
 }
