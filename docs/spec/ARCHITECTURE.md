@@ -97,7 +97,7 @@ lstack/
 | Hook | 타입 | 동작 |
 |------|------|------|
 | commit-document-reminder | PostToolUse(Bash) | `git commit` 감지 → `/document` 리마인드. async |
-| validate-tasks | PostToolUse(Write\|Edit) | `tasks.json` 수정 시 `check-jsonschema`로 스키마 validation. sync. 의존성: `pip install check-jsonschema` |
+| validate-plan | PostToolUse(Write\|Edit) | `plan.md` 수정 시 필수 섹션(설계, 요구사항, 태스크) 존재 여부 체크. sync |
 
 ---
 
@@ -112,14 +112,46 @@ PM Skill (가벼운 오케스트레이터)
     │  Phase 2: Design
     │     2.1-2.3 architect ── 수정 범위 + 시뮬레이션 + 패턴
     │     2.4 test-planner ─── 최소 테스트 시나리오
-    │     2.5 planner ──────── tasks.json 작성 (사용자 승인)
+    │     2.5 planner ──────── ## 태스크 작성 (사용자 승인)
     │  Phase 3: Execute ────── orchestrator (agent pool dispatch)
     │  Phase 4: Verify ─────── orchestrator (AC별 병렬 검증 + ralph-loop)
     │  Phase 5: Document ───── /document
     │  Phase 6: Compound ───── /compound (하니스 문제 시)
     │
     ▼
-tasks.json (단일 SOT)
+plan.md (단일 SOT — docs/worklogs/YYYY-MM-DD-<goal>/plan.md)
+```
+
+## plan.md 구조
+
+모든 상태가 단일 markdown 파일에 존재한다.
+
+```markdown
+# <goal>
+
+## 요구사항
+- [ ] R1: 요구사항 내용
+  - [ ] AC1: 검증 항목 (verify: agent)
+- [x] R2: 완료된 요구사항
+  - [x] AC2: 통과한 검증 항목
+
+## 설계
+(architect가 작성 — 자유 형식 분석, 수정 범위, 설계 결정, 리스크)
+
+## 태스크
+- [ ] T1: action (agent: oh-my-claudecode:executor)
+  - [ ] AC1: 검증 항목 (verify: superpowers:code-reviewer)
+- [x] T2: 완료된 태스크
+  - [x] AC2: 통과한 검증 항목
+
+## 구현 완료
+### T1: <action>
+#### 작업 요약
+#### 의사결정
+#### 암묵지
+#### 검증 방법
+
+## 향후 과제
 ```
 
 ## Compound Self-Improvement Loop
@@ -135,17 +167,3 @@ Compound Skill (메인 컨텍스트)
     |  Phase 4: worklog 기록 + spec 업데이트
     |  Phase 5: issue/PR 링크 보고
 ```
-
-## tasks.json
-
-단일 SOT. 스키마: `skills/start/tasks-schema.json`.
-
-| Field | Description |
-|-------|-------------|
-| goal | 사용자 의도 한 줄 요약 |
-| design | architect 분석 결과 파일 경로 (`docs/worklogs/YYYY-MM-DD-<goal>/design.md`) |
-| requirements[] | id, type (requirement\|design_decision), content, rationale?, status, acceptance_criteria[] |
-| requirements[].acceptance_criteria[] | id, check, verify_agent, status (pending/pass/fail) |
-| tasks[] | id, action, status, agent, depends_on, acceptance_criteria[], worklog |
-| tasks[].acceptance_criteria[] | id, check, verify_agent, status (pending/pass/fail) |
-| tasks[].worklog | summary, decisions, insights, changes |

@@ -4,15 +4,15 @@ description: |
   This skill should be used when the user says "/start", "start", "시작",
   "프로젝트 시작", "이거 만들어", "이거 고쳐", or gives a task that requires planning, scoping,
   and multi-step execution. Lightweight orchestrator that dispatches specialized
-  agents per phase. Does NOT accumulate phase results in its own context.
+  agents per phase. All state lives in a single plan.md file.
 ---
 
-# PM — Project Manager Orchestrator
+# Start — Project Orchestrator
 
-가벼운 오케스트레이터. 각 phase를 전문 agent에게 위임하고, tasks.json 상태만 추적한다.
+가벼운 오케스트레이터. 각 phase를 전문 agent에게 위임하고, plan.md 상태만 추적한다.
 
 **설계 원칙:** `docs/spec/PRINCIPLE.md` 참조.
-**스키마:** `skills/start/tasks-schema.json` 참조.
+**plan.md 경로:** `docs/worklogs/YYYY-MM-DD-<goal>/plan.md`
 
 ## Workflow
 
@@ -35,13 +35,33 @@ Agent({
 })
 ```
 
-PM은 반환된 goal + requirements 초안만 보유. 상세 대화 내용은 agent context와 함께 소멸.
+PM은 반환된 goal + requirements 초안만 보유.
 
 **사용자에게 goal + requirements 초안을 보여주고 확인.**
 
 ## Phase 2: Design
 
-3개 agent를 순차 dispatch. 각 agent는 이전 agent의 결과를 입력으로 받는다.
+plan.md를 생성하고 3개 agent를 순차 dispatch. 각 agent가 plan.md의 해당 섹션을 작성한다.
+
+**PM이 먼저 plan.md 초안을 생성:**
+```markdown
+# <goal>
+
+## 요구사항
+- [ ] R1: <requirement 1>
+- [ ] R2: <requirement 2>
+
+## 설계
+(architect가 작성)
+
+## 태스크
+(planner가 작성)
+
+## 구현 완료
+(orchestrator가 작성)
+
+## 향후 과제
+```
 
 ### 2.1~2.3: architect
 
@@ -49,10 +69,8 @@ PM은 반환된 goal + requirements 초안만 보유. 상세 대화 내용은 ag
 Agent({
   subagent_type: "lstack:architect",
   prompt: <포함>
-    - goal
-    - requirements 초안
-    - "수정 범위 파악 + 구현 시뮬레이션 + 디자인 패턴 결정"
-    - "JSON으로 반환: scope, design_decisions, risks"
+    - plan.md 경로
+    - "plan.md를 읽고 ## 설계 섹션을 작성하세요"
 })
 ```
 
@@ -62,10 +80,8 @@ Agent({
 Agent({
   subagent_type: "lstack:test-planner",
   prompt: <포함>
-    - goal
-    - requirements 초안
-    - "docs/worklogs/YYYY-MM-DD-<goal>/design.md 를 읽고 architect의 분석을 참고하세요"
-    - "최소 테스트 시나리오 설계. JSON으로 반환: test_scenarios, coverage_gaps"
+    - plan.md 경로
+    - "plan.md를 읽고 ## 요구사항의 각 항목에 AC 체크박스를 추가하세요"
 })
 ```
 
@@ -75,33 +91,30 @@ Agent({
 Agent({
   subagent_type: "lstack:planner",
   prompt: <포함>
-    - goal
-    - requirements 초안
-    - "docs/worklogs/YYYY-MM-DD-<goal>/design.md 를 읽고 architect의 분석을 참고하세요"
-    - test-planner 반환값
+    - plan.md 경로
     - Execute Agent Pool 목록
     - Verify Agent Pool 목록
-    - "tasks.json을 작성하세요. 스키마: skills/start/tasks-schema.json"
+    - "plan.md를 읽고 ## 태스크 섹션을 작성하세요"
 })
 ```
 
-**사용자에게 tasks.json을 보여주고 승인을 받은 후 Phase 3로 진행.**
+**사용자에게 plan.md를 보여주고 승인을 받은 후 Phase 3로 진행.**
 
 ## Phase 3: Execute + Phase 4: Verify
 
-executor agent에게 위임. executor가 task별 실행 + AC별 검증 + ralph-loop를 모두 처리.
+orchestrator agent에게 위임.
 
 ```
 Agent({
   subagent_type: "lstack:orchestrator",
   prompt: <포함>
-    - tasks.json 경로
-    - "tasks.json을 읽고 task별로 실행 + 검증. 완료 시 보고."
+    - plan.md 경로
+    - "plan.md를 읽고 ## 태스크를 순서대로 실행 + 검증. ## 구현 완료에 기록."
 })
 ```
 
-PM은 executor 완료 후 tasks.json을 읽어서 전체 상태만 확인.
-모든 task가 `verified`가 아니면 사용자에게 에스컬레이션.
+PM은 orchestrator 완료 후 plan.md를 읽어서 전체 상태만 확인.
+모든 task 체크박스가 [x]가 아니면 사용자에게 에스컬레이션.
 
 ## Phase 5: Document
 
@@ -109,23 +122,15 @@ PM은 executor 완료 후 tasks.json을 읽어서 전체 상태만 확인.
 /document 스킬 호출
 ```
 
-추가로 tasks.json을 worklog 디렉토리에 아카이빙:
-```bash
-cp tasks.json docs/worklogs/YYYY-MM-DD-<goal>/tasks.json
-```
-
 ## Phase 6: Compound
 
-작업 과정에서 하니스 자체의 문제점이 발견되었는지 검토한다.
+plan.md의 ## 구현 완료를 읽고 하니스 문제를 식별:
+- 비효율적이었던 워크플로우
+- 부적절했던 agent 선택
+- 반복 실패 패턴
 
-1. tasks.json의 worklog를 읽고 하니스 문제를 식별:
-   - PM 워크플로우 중 비효율적이었던 부분
-   - agent 선택이 부적절했거나 누락된 agent 유형
-   - tasks.json 스키마에 부족한 필드
-   - 검증 과정에서 반복 실패한 패턴
-
-2. 문제 발견 시 → `/compound` 스킬 호출
-3. 문제 없으면 → 스킵
+문제 발견 시 → `/compound` 스킬 호출.
+문제 없으면 → 스킵.
 
 ## Agent Pool Reference
 
@@ -155,8 +160,6 @@ PM은 Phase 2.5에서 planner에게 이 목록을 전달한다.
 | 보안 감사 (심층) | `gstack:cso` | STRIDE, supply chain, CI/CD |
 
 ### Design Agent Pool
-
-Phase 2에서 추가로 활용 가능:
 
 | 용도 | Agent | 비고 |
 |------|-------|------|
