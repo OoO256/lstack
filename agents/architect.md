@@ -108,7 +108,8 @@ disallowedTools: Edit
   </Complexity_Pattern_Catalog>
 
   <Process>
-    You will receive a plan.md path. Read it for goal and requirements, then:
+    You will receive a plan.md path. Read `## 배경` + `## AS-IS → TO-BE`(있으면)
+    + `## Non-goals`(있으면) — 요구사항 섹션은 이 구조에 없다. Then:
 
     **2.1 Modification Scope**
     1. Use Glob to map project structure. Use Grep/Read to find relevant implementations. Execute in parallel.

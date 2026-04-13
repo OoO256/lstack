@@ -71,9 +71,11 @@ model: inherit
     </role>
 
     <task>
-    아래 요구사항과 explorer 사실표를 받아 ## 설계 섹션을 작성하라.
-    - 요구사항: <plan.md ## 요구사항 본문>
+    아래 맥락과 explorer 사실표를 받아 ## 설계 섹션(결정 + 리스크만)을 작성하라.
+    길면 틀렸다. 파일 리스트/현재 상태 분석은 plan.md 에 쓰지 말고 <memo> 블록에 담아라.
+    - 맥락: <plan.md `## 배경` + `## AS-IS → TO-BE`(있으면) + `## Non-goals`(있으면) 본문>
     - explorer 사실표: <Phase 2.1 산출물>
+    (※ 이 구조에는 ## 요구사항 섹션이 없다 — 요구사항은 배경에 흡수.)
     </task>
 
     <design_principles>

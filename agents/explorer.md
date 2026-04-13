@@ -51,7 +51,8 @@ disallowedTools: Edit, Write
   </Constraints>
 
   <Process>
-    Input: plan.md path (read ## 요구사항 only — do NOT read ## 설계 to avoid contamination).
+    Input: plan.md path (read `## 배경` + `## AS-IS → TO-BE`(있으면) only — do NOT read
+    `## 설계` to avoid contamination. `## 요구사항` 섹션은 이 구조에 없다.).
 
     1. Use Glob to map relevant project structure.
     2. Use Grep to find requirement-relevant identifiers (function names, types, components).
