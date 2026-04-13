@@ -35,6 +35,8 @@ model: inherit
     - Per-task verify ACs + code review dispatched in parallel the moment that task completes
     - No task's verify is blocked by another task's execution
     - Implementation, verification, and review are always done by DIFFERENT agents
+    - **Pass/RALPH/RESCUE/ESCALATE 결정은 lstack:codex-judge 에 위임** (Codex 우선, fallback judge).
+      Orchestrator는 dispatcher 역할만 — 자기가 verdict 정하지 않는다 (advocacy bias 회피)
     - Worklog (작업 요약, 의사결정, 암묵지, 검증 방법, 코드 리뷰[, 복잡성 정리]) written under each task checkbox
     - Failed tasks get max 3 ralph-loop retries with prior failure evidence included
     - **3rd ralph 실패 시 codex:codex-rescue 폴백 1회** (사용자 에스컬레이션 직전 안전망)
@@ -150,25 +152,42 @@ model: inherit
     Do NOT block. Immediately after fan-out, check whether the next wave's dependencies are
     satisfied and dispatch its tasks per Step 1. Pipeline keeps moving.
 
-    ## Step 3: Aggregate per task (on each verify/review completion)
+    ## Step 3: Aggregate evidence + Judge dispatch
 
-    Track per-task completion of: implementation done, every AC verified, code review done.
-    When ALL three for task Tn have returned:
+    Track per-task completion of: implementation done, every AC verified, code review done
+    (FF + Codex adversarial if gated). When all returned, **package evidence into a JSON and
+    dispatch the judge** — orchestrator does NOT decide PASS/RALPH/RESCUE/ESCALATE itself.
 
-    - **All ACs pass** → check task `[x]` + check each AC `[x]`
-    - **Any AC fails** → leave unchecked; go to Step 4 (ralph-loop)
-    - **Code review findings** (FF + Codex adversarial 합산):
-      - Critical (양쪽 중 어느 한쪽이라도) → block task pass; treat as ralph-loop trigger (Step 4)
-      - Critical 이 양쪽 모두에서 일치 → 신호 강도 ↑, ralph-loop 우선순위 최상
-      - Important → append item to `## 향후 과제`; do NOT block task pass
-      - Minor → record in worklog only; do NOT block
-      - Codex 도전 (assumption/approach challenge, severity 아님) → worklog `### 코드 리뷰` 에
-        별도 bullet 기록 (사용자가 향후 의사결정 시 참고용, 차단하지 않음)
-    - **Complexity signals** (always check, regardless of severity):
-      Code review surfaces signals like cyclomatic > 10, nesting > 4, repeated structure 3+,
-      long parameter lists, props drilling 3+, Hook returning 5+, etc. (full list in
-      `agents/architect.md` `<Complexity_Pattern_Catalog>`). If ANY such signal is present:
-      → go to **Step 3.5 (simplifier fan-out)** before marking the task done.
+    ```
+    Agent({
+      subagent_type: "lstack:codex-judge",
+      prompt: <evidence JSON>
+    })
+    ```
+
+    Evidence JSON shape:
+    ```json
+    {
+      "task_id": "Tn",
+      "ac_results": [{"ac": "...", "pass": bool, "evidence": "..."}, ...],
+      "ff_review": {"critical": [...], "important": [...], "minor": [...]},
+      "codex_review": {"critical": [...], "important": [...], "minor": [...], "challenges": [...]} | null,
+      "complexity_signals": [...],
+      "ralph_attempts": <int>,
+      "codex_rescue_attempted": bool
+    }
+    ```
+
+    `codex-judge` 가 내부적으로 Codex 시도 → 실패 시 자동 `lstack:judge` 로 fallback.
+    어느 쪽이든 동일 schema 의 JSON verdict 반환. 호출자(orchestrator)는 verdict 만 보고 행동:
+
+    - `decision: "PASS"` → 체크 [x], carried_findings를 `## 향후 과제`로 적재,
+      carried_challenges를 worklog `### 코드 리뷰` bullet으로 기록,
+      `simplifier_needed: true` 면 → Step 3.5 라우팅,
+      `rescued_by_codex: true` 면 worklog `### 작업 요약`에 `(rescued by codex)` 첨부
+    - `decision: "RALPH"` → Step 4 진입 (`retry_payload` 사용)
+    - `decision: "RESCUE"` → Step 4.5 진입 (`rescue_payload` 사용)
+    - `decision: "ESCALATE"` → 사용자 에스컬레이션 (모든 evidence 첨부)
 
     Append worklog directly under the task's checkbox in `## 태스크`:
 

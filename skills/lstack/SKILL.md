@@ -53,7 +53,7 @@ ls -1dt docs/worklogs/*/  2>/dev/null | head -10
 | plan.md 상태 | 다음 phase |
 |--------------|-----------|
 | `## 요구사항` 없음/비어있음 | **Phase 1** (Interview 처음부터) |
-| `## 요구사항`만 있고 `## 설계` 비어있음 | **Phase 2.1-2.3** (architect) |
+| `## 요구사항`만 있고 `## 설계` 비어있음 | **Phase 2.1** (explorer) → 2.2-2.3 (codex-architect) |
 | `## 설계` 작성됐고 `## 요구사항` 항목에 AC 체크박스 없음 | **Phase 2.4** (test-planner) |
 | `## 요구사항`에 AC는 있고 `## 태스크` 비어있음 | **Phase 2.5** (planner) → 사용자 승인 |
 | `## 태스크`에 `[ ]` 미완료 항목이 있음 | **Phase 3+4** (orchestrator) |
@@ -104,16 +104,32 @@ plan.md 초안 (없으면 생성):
 ## 향후 과제
 ```
 
-### 2.1~2.3: architect
+### 2.1: explorer (READ-ONLY 사실 수집)
 
 ```
 Agent({
-  subagent_type: "lstack:architect",
+  subagent_type: "lstack:explorer",
   prompt: <포함>
     - plan.md 경로
-    - "plan.md를 읽고 ## 설계 섹션을 작성하세요"
+    - "## 요구사항만 읽고 (## 설계는 읽지 말 것), 코드베이스 사실표를 반환하세요. 평가 금지."
 })
 ```
+
+explorer는 plan.md에 쓰지 않고 사실표를 응답으로 반환. PM이 그걸 받아 다음 agent 입력으로 전달.
+
+### 2.2-2.3: codex-architect (Codex 우선, fallback = lstack:architect)
+
+```
+Agent({
+  subagent_type: "lstack:codex-architect",
+  prompt: <포함>
+    - plan.md 경로
+    - explorer 사실표 (Phase 2.1 산출물 그대로)
+    - "Codex로 1st principles 설계 → ## 설계 섹션에 기록. Codex 미가용 시 lstack:architect로 자동 fallback."
+})
+```
+
+codex-architect 가 내부에서 Codex availability 체크 후 분기. 어느 backend 갔는지 `DESIGN_BACKEND` 로 보고.
 
 ### 2.4: test-planner
 
