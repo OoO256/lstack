@@ -201,6 +201,7 @@ PM은 Phase 2.5에서 planner에게 이 목록을 전달한다.
 | 디버깅 | `oh-my-claudecode:debugger` | 근본 원인 분석 + 최소 수정 |
 | 디버깅 (체계적) | `superpowers:systematic-debugging` | 4-phase 근본 원인 추적 |
 | 리팩토링 | `oh-my-claudecode:code-simplifier` | 동작 유지 + 가독성 개선. opus |
+| 복잡성 정리 (자동) | `lstack:simplifier` | code review 복잡성 신호에 패턴 카탈로그 적용. orchestrator가 자동 호출 — task로 직접 박지 말 것 |
 | 탐색 | `oh-my-claudecode:explore` | 코드베이스 검색. haiku |
 | fallback | `general-purpose` | 위 agent가 모두 안 맞을 때만 |
 

@@ -35,9 +35,10 @@ model: inherit
     - Per-task verify ACs + code review dispatched in parallel the moment that task completes
     - No task's verify is blocked by another task's execution
     - Implementation, verification, and review are always done by DIFFERENT agents
-    - Worklog (작업 요약, 의사결정, 암묵지, 검증 방법, 코드 리뷰) written under each task checkbox
+    - Worklog (작업 요약, 의사결정, 암묵지, 검증 방법, 코드 리뷰[, 복잡성 정리]) written under each task checkbox
     - Failed tasks get max 3 ralph-loop retries with prior failure evidence included
     - Code review Critical/Important issues land in `## 향후 과제`
+    - **Code review 복잡성 신호 시 simplifier 자동 fan-out** — 동작 보존 전제 리팩터, 회귀 시 자동 revert
   </Success_Criteria>
 
   <Constraints>
@@ -138,6 +139,11 @@ model: inherit
       - Critical → block task pass; treat as ralph-loop trigger (Step 4)
       - Important → append item to `## 향후 과제`; do NOT block task pass
       - Minor → record in worklog only; do NOT block
+    - **Complexity signals** (always check, regardless of severity):
+      Code review surfaces signals like cyclomatic > 10, nesting > 4, repeated structure 3+,
+      long parameter lists, props drilling 3+, Hook returning 5+, etc. (full list in
+      `agents/architect.md` `<Complexity_Pattern_Catalog>`). If ANY such signal is present:
+      → go to **Step 3.5 (simplifier fan-out)** before marking the task done.
 
     Append worklog directly under the task's checkbox in `## 태스크`:
 
@@ -150,7 +156,36 @@ model: inherit
       ### 검증 방법
       ### 코드 리뷰
       (요약: pass / Critical N건 / Important N건 / Minor N건. 핵심 지적 bullet)
+      ### 복잡성 정리 (simplifier가 호출됐을 때만)
+      (요약: signals N건 중 적용 M / 스킵 K / 향후 과제 P. cyclomatic 14→6 등 delta)
     ```
+
+    ## Step 3.5: Simplifier fan-out (복잡성 신호 시)
+
+    Code review가 복잡성 신호를 보고했을 때만 진입. ralph-loop 와는 별도 — 동작 보존
+    리팩터 시도이지 실패 재시도가 아니다.
+
+    ```
+    Agent({
+      subagent_type: "lstack:simplifier",
+      run_in_background: true,
+      prompt:
+        - 대상 task id + 파일 목록 + 코드 리뷰가 보고한 복잡성 신호(file:line + 신호명 + 임계 초과치)
+        - 해당 task의 ACs (재검증용)
+        - 해당 task의 commit SHA(s)
+        - "동작 보존 전제로 카탈로그 패턴을 적용해 신호를 줄여라. SIMPLIFIER_REPORT 를 반환."
+    })
+    ```
+
+    Simplifier 결과 처리:
+    - **Behavior preserved + signals reduced** → 변경 commit 그대로 둠. `### 복잡성 정리`
+      섹션에 SIMPLIFIER_REPORT 요약 기록. task 통과.
+    - **Behavior regression (AC 실패)** → simplifier가 자체 revert. 미해결 신호는 worklog에
+      기록. task 통과 (review가 차단하지 않는 한).
+    - **Deferred signals** → `## 향후 과제`에 추가.
+
+    Simplifier 실패 시 ralph-loop은 트리거하지 않는다 (구현은 이미 통과한 상태). 복잡성은
+    품질 개선 시도이지 정확성 게이트가 아니다.
 
     ## Step 4: Ralph-loop (on failure, max 3)
 

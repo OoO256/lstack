@@ -52,7 +52,8 @@ lstack/
 | architect | `agents/architect.md` | Design 2.1-2.3 | 수정 범위 + 구현 시뮬레이션 + 디자인 패턴. READ-ONLY |
 | test-planner | `agents/test-planner.md` | Design 2.4 | 최소 테스트 시나리오 설계. 코드 작성 안 함 |
 | planner | `agents/planner.md` | Design 2.5 | tasks.json 작성. agent pool 참조 |
-| orchestrator | `agents/orchestrator.md` | Execute+Verify+Review | wave 단위 백그라운드 병렬 task dispatch + 완료 즉시 verify ACs ∥ code review fan-out + ralph-loop |
+| orchestrator | `agents/orchestrator.md` | Execute+Verify+Review | wave 단위 백그라운드 병렬 task dispatch + 완료 즉시 verify ACs ∥ code review fan-out + 복잡성 신호 시 simplifier 라우팅 + ralph-loop |
+| simplifier | `agents/simplifier.md` | Execute (post-review) | 코드 리뷰가 보고한 복잡성 신호에 패턴 카탈로그 적용. 동작 보존, 회귀 시 자동 revert |
 | harness-sage | `agents/harness-sage.md` | Compound | worktree 격리 후 코드 구현 + issue/PR 생성 |
 
 ### 외부 Agent Pool
@@ -125,6 +126,7 @@ lstack Skill (PM 진입점)
     │  Phase 3+4: Execute+Verify+Review (pipelined)
     │     orchestrator ─────── wave 단위 백그라운드 병렬 dispatch
     │       └─ 각 task 완료 → verify ACs ∥ code review (frontend-fundamentals:review) fan-out
+    │       └─ review 가 복잡성 신호 보고 → simplifier fan-out (동작 보존 패턴 적용)
     │  Phase 5: Spec 업데이트 ── docs/spec/ SSOT 반영
     │  Phase 6: Compound ───── /compound (하니스 문제 시)
 
