@@ -27,7 +27,9 @@ lstack/
 - **역할**: 단일 진입점. **Phase 0에서 worklog 스캔 + plan.md 섹션 상태로 현재 phase 자동 추론**,
   새 작업 / 이어서 작업을 판별 후 알맞은 phase agent를 dispatch.
 - **워크플로우**: [State Detect] → Interview → Design (architect → test-planner → planner) →
-  Execute+Verify+Review (orchestrator, pipelined) → Spec 업데이트 → Compound
+  **Codex Adversarial Design Review** → Execute+Verify+Review (orchestrator, pipelined,
+  per-task FF + Codex adversarial fan-out, 복잡성 시 simplifier, 3회 ralph 실패 시
+  Codex Rescue 폴백) → Spec 업데이트 → Compound
 - **원칙**: `docs/spec/PRINCIPLE.md` 참조
 
 ### compound
@@ -52,7 +54,7 @@ lstack/
 | architect | `agents/architect.md` | Design 2.1-2.3 | 수정 범위 + 구현 시뮬레이션 + 디자인 패턴. READ-ONLY |
 | test-planner | `agents/test-planner.md` | Design 2.4 | 최소 테스트 시나리오 설계. 코드 작성 안 함 |
 | planner | `agents/planner.md` | Design 2.5 | tasks.json 작성. agent pool 참조 |
-| orchestrator | `agents/orchestrator.md` | Execute+Verify+Review | wave 단위 백그라운드 병렬 task dispatch + 완료 즉시 verify ACs ∥ code review fan-out + 복잡성 신호 시 simplifier 라우팅 + ralph-loop |
+| orchestrator | `agents/orchestrator.md` | Execute+Verify+Review | wave 단위 백그라운드 병렬 task dispatch + 완료 즉시 verify ACs ∥ FF code review ∥ Codex adversarial(LOC>50) fan-out + 복잡성 신호 시 simplifier 라우팅 + ralph-loop + 3회 실패 시 Codex Rescue 폴백 |
 | simplifier | `agents/simplifier.md` | Execute (post-review) | 코드 리뷰가 보고한 복잡성 신호에 패턴 카탈로그 적용. 동작 보존, 회귀 시 자동 revert |
 | harness-sage | `agents/harness-sage.md` | Compound | worktree 격리 후 코드 구현 + issue/PR 생성 |
 
@@ -86,6 +88,15 @@ lstack/
 | 용도 | Skill | 비고 |
 |------|-------|------|
 | 프론트엔드 품질 | `frontend-fundamentals:review` | 가독성/예측가능성/응집도/결합도 원칙. task별 commit diff 기반 |
+
+**Codex Integration Pool** — 다른 모델(GPT-5 Codex)의 독립 시각. 모두 fail-soft (미설치/실패 시
+워크플로우 차단 안 함):
+
+| 시점 | 호출 방식 | 용도 |
+|------|-----------|------|
+| Phase 2.6 (설계 후, 사용자 승인 전) | Bash → `codex-companion adversarial-review --background` | 설계/접근/가정 도전. 사용자가 plan.md + Codex 도전을 함께 보고 승인 |
+| 각 task 완료 후 fan-out (LOC > 50 게이트) | Bash → `codex-companion adversarial-review --wait` | 변경 부분에 대한 2nd opinion. FF review와 평행. Critical 일치 시 ralph-loop 우선순위 ↑ |
+| Ralph-loop 3회 실패 후 사용자 에스컬레이션 직전 | Agent: `codex:codex-rescue --write` | 다른 모델의 마지막 시도. 통과 시 정상 완료, 실패 시 에스컬레이션 |
 
 **Design Pool** — Phase 2에서 추가 활용 가능:
 
@@ -122,11 +133,14 @@ lstack Skill (PM 진입점)
     │  Phase 2: Design
     │     2.1-2.3 architect ── 수정 범위 + 시뮬레이션 + 패턴
     │     2.4 test-planner ─── 최소 테스트 시나리오
-    │     2.5 planner ──────── ## 태스크 작성 (사용자 승인)
+    │     2.5 planner ──────── ## 태스크 작성
+    │     2.6 Codex adversarial ─ design 자체 도전 (assumption/approach/tradeoff)
+    │                              → plan.md + Codex 도전을 함께 사용자에게 (사용자 승인)
     │  Phase 3+4: Execute+Verify+Review (pipelined)
     │     orchestrator ─────── wave 단위 백그라운드 병렬 dispatch
-    │       └─ 각 task 완료 → verify ACs ∥ code review (frontend-fundamentals:review) fan-out
+    │       └─ 각 task 완료 → verify ACs ∥ FF review ∥ Codex adversarial(LOC>50) fan-out
     │       └─ review 가 복잡성 신호 보고 → simplifier fan-out (동작 보존 패턴 적용)
+    │       └─ 3회 ralph 실패 → Codex Rescue 폴백 1회 → 그래도 실패 시 사용자 에스컬레이션
     │  Phase 5: Spec 업데이트 ── docs/spec/ SSOT 반영
     │  Phase 6: Compound ───── /compound (하니스 문제 시)
 

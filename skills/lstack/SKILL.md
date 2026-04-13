@@ -139,7 +139,37 @@ Agent({
 })
 ```
 
-**사용자에게 plan.md를 보여주고 승인을 받은 후 Phase 3로 진행.**
+### 2.6: Adversarial design review (Codex 2nd opinion)
+
+planner까지 끝난 plan.md를 사용자에게 보여주기 **전**에, Codex로 설계/접근/가정을 도전한다.
+다른 모델의 독립 시각으로 잘못된 방향을 코딩 시작 전에 잡는 게 목적.
+
+```bash
+# plan.md를 staged로 만들어 review 대상에 포함
+git add docs/worklogs/<this-worklog>/plan.md
+
+# codex companion script 위치 발견
+CODEX_SCRIPT=$(ls ~/.claude/plugins/marketplaces/openai-codex/plugins/codex/scripts/codex-companion.mjs 2>/dev/null \
+  || find ~/.claude/plugins -path '*openai-codex*codex/scripts/codex-companion.mjs' 2>/dev/null | head -1)
+
+# adversarial review (background, plan.md 변경분 + 설계 자체에 초점)
+node "$CODEX_SCRIPT" adversarial-review --background \
+  "Challenge the design in this plan.md. Question approach, hidden assumptions,
+   tradeoffs, and whether a simpler alternative would meet 요구사항 with less complexity.
+   Read-only — do not edit anything."
+```
+
+PM 책임:
+- Codex 도전이 완료되면 (`/codex:status`로 확인) `/codex:result`로 출력 회수
+- plan.md + Codex 도전을 **함께** 사용자에게 보여줌 (도전을 숨기지 말 것)
+- 사용자 결정:
+  - 그대로 승인 → Phase 3 진행
+  - 도전이 타당 → Phase 2.1-2.5 일부를 다시 돌림 (architect/planner 재호출)
+  - 부분 수정 → 사용자가 직접 plan.md 편집 후 진행
+
+Codex 호출 실패 / Codex 미설치 → 경고만 남기고 사용자 승인으로 진행 (블로커 아님).
+
+**사용자에게 plan.md (+ Codex 도전) 을 보여주고 승인을 받은 후 Phase 3로 진행.**
 
 ## Phase 3+4: Execute + Verify + Code Review (Pipelined)
 
