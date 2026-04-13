@@ -21,11 +21,13 @@ lstack/
 
 ## Skills
 
-### pm
-- **경로**: `skills/start/SKILL.md`
-- **트리거**: `/start`, "시작", "프로젝트 시작", "이거 만들어", "이거 고쳐"
-- **역할**: 가벼운 6-phase 오케스트레이터. 각 phase를 전문 agent에게 위임하고 tasks.json 상태만 추적.
-- **워크플로우**: Interview → Design (architect → test-planner → planner) → Execute+Verify (orchestrator) → Document → Compound
+### lstack (PM 진입점, start 스킬 대체)
+- **경로**: `skills/lstack/SKILL.md`
+- **트리거**: `/lstack`, `/start`, "시작", "이어서", "계속", "resume", "이거 만들어", "이거 고쳐"
+- **역할**: 단일 진입점. **Phase 0에서 worklog 스캔 + plan.md 섹션 상태로 현재 phase 자동 추론**,
+  새 작업 / 이어서 작업을 판별 후 알맞은 phase agent를 dispatch.
+- **워크플로우**: [State Detect] → Interview → Design (architect → test-planner → planner) →
+  Execute+Verify+Review (orchestrator, pipelined) → Spec 업데이트 → Compound
 - **원칙**: `docs/spec/PRINCIPLE.md` 참조
 
 ### compound
@@ -50,7 +52,7 @@ lstack/
 | architect | `agents/architect.md` | Design 2.1-2.3 | 수정 범위 + 구현 시뮬레이션 + 디자인 패턴. READ-ONLY |
 | test-planner | `agents/test-planner.md` | Design 2.4 | 최소 테스트 시나리오 설계. 코드 작성 안 함 |
 | planner | `agents/planner.md` | Design 2.5 | tasks.json 작성. agent pool 참조 |
-| orchestrator | `agents/orchestrator.md` | Execute+Verify | task별 agent dispatch + AC별 검증 + ralph-loop |
+| orchestrator | `agents/orchestrator.md` | Execute+Verify+Review | wave 단위 백그라운드 병렬 task dispatch + 완료 즉시 verify ACs ∥ code review fan-out + ralph-loop |
 | harness-sage | `agents/harness-sage.md` | Compound | worktree 격리 후 코드 구현 + issue/PR 생성 |
 
 ### 외부 Agent Pool
@@ -77,6 +79,12 @@ lstack/
 | 비판적 리뷰 | `oh-my-claudecode:critic` | 다관점 결함/갭 탐지. opus |
 | 보안 감사 | `oh-my-claudecode:security-reviewer` | OWASP Top 10. opus |
 | 보안 감사 (심층) | `gstack:cso` | STRIDE, supply chain, CI/CD |
+
+**Code Review Skill** — orchestrator가 task별로 자동 호출 (Skill, agent 아님):
+
+| 용도 | Skill | 비고 |
+|------|-------|------|
+| 프론트엔드 품질 | `frontend-fundamentals:review` | 가독성/예측가능성/응집도/결합도 원칙. task별 commit diff 기반 |
 
 **Design Pool** — Phase 2에서 추가 활용 가능:
 
@@ -107,16 +115,30 @@ lstack/
 사용자 요청
     │
     ▼
-PM Skill (가벼운 오케스트레이터)
+lstack Skill (PM 진입점)
+    │  Phase 0: State Detect ── worklog 스캔 + plan.md 섹션 분석 → 새 작업/resume 판별
     │  Phase 1: Interview ─── hoyeon:interviewer
     │  Phase 2: Design
     │     2.1-2.3 architect ── 수정 범위 + 시뮬레이션 + 패턴
     │     2.4 test-planner ─── 최소 테스트 시나리오
     │     2.5 planner ──────── ## 태스크 작성 (사용자 승인)
-    │  Phase 3: Execute ────── orchestrator (agent pool dispatch)
-    │  Phase 4: Verify ─────── orchestrator (AC별 병렬 검증 + ralph-loop)
-    │  Phase 5: Document ───── /document
+    │  Phase 3+4: Execute+Verify+Review (pipelined)
+    │     orchestrator ─────── wave 단위 백그라운드 병렬 dispatch
+    │       └─ 각 task 완료 → verify ACs ∥ code review (frontend-fundamentals:review) fan-out
+    │  Phase 5: Spec 업데이트 ── docs/spec/ SSOT 반영
     │  Phase 6: Compound ───── /compound (하니스 문제 시)
+
+orchestrator pipeline 구조 (wave N에서 task가 끝나는 순간 wave N+1 dispatch와
+verify+review fan-out이 동시에 진행 — 어느 task도 sibling을 기다리지 않음):
+
+```
+wave 1: T1.exec ──┐                      ┌─→ T1.verify ACs ∥ T1.review
+                  ├─ (background) ──────┤
+        T2.exec ──┘                      └─→ T2.verify ACs ∥ T2.review
+                                          │
+wave 2:                            T3.exec ─→ T3.verify ACs ∥ T3.review
+                                  (depends on T1)
+```
     │
     ▼
 plan.md (단일 SOT — docs/worklogs/YYYY-MM-DD-<goal>/plan.md)
