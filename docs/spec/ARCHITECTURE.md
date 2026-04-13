@@ -132,7 +132,7 @@ lstack/
 | Hook | 타입 | 동작 |
 |------|------|------|
 | commit-document-reminder | PostToolUse(Bash) | `git commit` 감지 → `/document` 리마인드. async |
-| validate-plan | PostToolUse(Write\|Edit) | `plan.md` 수정 시 필수 섹션(설계, 요구사항, 태스크) 존재 여부 체크. sync |
+| validate-plan | PostToolUse(Write\|Edit) | `plan.md` 수정 시 필수 섹션(배경, 설계, 태스크) 체크 + deprecated `## 요구사항` 경고. sync |
 
 ---
 
@@ -149,8 +149,8 @@ lstack Skill (PM 진입점)
     │     2.1 explorer ──────── READ-ONLY 사실표 (anchor 분리)
     │     2.2-2.3 codex-architect (Codex 우선, fallback = architect)
     │                            ─ 사실표 + 요구사항 → 1st principles 설계
-    │     2.4 test-planner ─── 최소 테스트 시나리오
-    │     2.5 planner ──────── ## 태스크 작성
+    │     2.4 planner ──────── ## 태스크 › ### 대기 (skeleton — action + exec + 힌트 1-3줄)
+    │     2.5 test-planner ─── 각 태스크 밑에 AC 추가 (요구사항 섹션 없음)
     │     2.6 Codex adversarial ─ design 자체 도전 (assumption/approach/tradeoff)
     │                              → plan.md + Codex 도전을 함께 사용자에게 (사용자 승인)
     │  Phase 3+4: Execute+Verify+Review (pipelined)
@@ -181,30 +181,53 @@ plan.md (단일 SOT — docs/worklogs/YYYY-MM-DD-<goal>/plan.md)
 
 ## plan.md 구조
 
-모든 상태가 단일 markdown 파일에 존재한다.
+모든 상태가 단일 markdown 파일에 존재한다. **요구사항 섹션은 없다** — 태스크가 단일 SOT.
+**설계는 결정 + 리스크만** (현재 상태/파일 리스트는 태스크 본문으로). **태스크는 완료→진행중→대기 시간 순**.
+자세한 규칙과 좋은 예시는 `skills/write-plan-md/` 참조.
 
 ```markdown
 # <goal>
 
-## 요구사항
-- [ ] R1: 요구사항 내용
-  - [ ] AC1: 검증 항목 (verify: agent)
-- [x] R2: 완료된 요구사항
-  - [x] AC2: 통과한 검증 항목
+**코드 루트**: `path/prefix/` (선택)
+
+## 배경
+2-3 문장. 왜 이 worklog 가 필요한지.
+
+## AS-IS → TO-BE (선택)
+한눈에 상태 대비가 필요할 때 표 또는 서술.
+
+## Non-goals (선택)
+- 스코프 밖 한 줄씩
 
 ## 설계
-(architect가 작성 — 자유 형식 분석, 수정 범위, 설계 결정, 리스크)
+### 결정
+- **결정 내용** — 근거. 대안: X (기각 이유).
+  FF 원칙: 가독성↑/예측가능성↑/응집도↑/결합도↓ 중 해당 축.
+  복잡성 신호: <신호> → <패턴> 또는 "없음".
+### 리스크
+- 구체적 위험 — 발현 조건, 완화안
 
 ## 태스크
-- [ ] T1: action (agent: oh-my-claudecode:executor)
-  - [ ] AC1: 검증 항목 (verify: superpowers:code-reviewer)
+(순서: 완료 → 진행 중 → 대기 = 시간 순)
 
-- [x] T2: 완료된 태스크 (agent: oh-my-claudecode:executor)
-  - [x] AC2: 통과한 검증 항목
-  ### 작업 요약
-  ### 의사결정
-  ### 암묵지
-  ### 검증 방법
+### 완료
+- [x] T0: action (exec: executor) — commit `abc1234`
+  - [x] AC0: ... (v: verifier) ✓
+  ### 작업 요약 (필수, 1-3줄)
+  ### 검증 방법 (필수)
+  ### 코드 리뷰 (필수 — orchestrator)
+  ### 의사결정 (선택 — 상위 설계 결정 중복 금지)
+  ### 남은 리스크 (선택 — 이전 "암묵지")
+
+### 진행 중
+- [→] T1: action (exec: executor) — dispatched 2026-04-13 14:02
+  - [ ] AC1: ... (v: verifier)
+
+### 대기
+- [ ] T2: action (exec: executor)
+  수정: `path:line` — 이유
+  신규: `path` — 목적
+  - [ ] AC2: ... (v: code-reviewer)
 
 ## 향후 과제
 ```

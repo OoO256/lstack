@@ -52,12 +52,12 @@ ls -1dt docs/worklogs/*/  2>/dev/null | head -10
 
 | plan.md 상태 | 다음 phase |
 |--------------|-----------|
-| `## 요구사항` 없음/비어있음 | **Phase 1** (Interview 처음부터) |
-| `## 요구사항`만 있고 `## 설계` 비어있음 | **Phase 2.1** (explorer) → 2.2-2.3 (codex-architect) |
-| `## 설계` 작성됐고 `## 요구사항` 항목에 AC 체크박스 없음 | **Phase 2.4** (test-planner) |
-| `## 요구사항`에 AC는 있고 `## 태스크` 비어있음 | **Phase 2.5** (planner) → 사용자 승인 |
-| `## 태스크`에 `[ ]` 미완료 항목이 있음 | **Phase 3+4** (orchestrator) |
-| `## 태스크` 모두 `[x]`이고 spec 변경 미확인 | **Phase 5** (Spec 업데이트) |
+| `## 배경` 없음/비어있음 | **Phase 1** (Interview 처음부터) |
+| `## 배경`만 있고 `## 설계` 비어있음 | **Phase 2.1** (explorer) → 2.2-2.3 (codex-architect) |
+| `## 설계` 작성됐고 `## 태스크` 비어있음 | **Phase 2.4** (planner) — 태스크 skeleton |
+| `## 태스크 › ### 대기`에 태스크 있고 AC 비어있음 | **Phase 2.5** (test-planner) → 2.6 (Codex adversarial) → 사용자 승인 |
+| `## 태스크 › ### 대기`에 `[ ]` 미완료 항목 있음 | **Phase 3+4** (orchestrator) |
+| `### 대기`/`### 진행 중` 비었고 `### 완료`만 있으며 spec 변경 미확인 | **Phase 5** (Spec 업데이트) |
 | 모두 완료 | **Phase 6** (Compound) — 문제 패턴만 점검 |
 
 판별 결과를 사용자에게 짧게 보고:
@@ -86,20 +86,36 @@ PM은 반환된 goal + requirements 초안만 보유.
 
 ## Phase 2: Design
 
-plan.md 초안 (없으면 생성):
+plan.md 초안 (없으면 생성). **요구사항 섹션은 없다** — 태스크가 단일 SOT:
 
 ```markdown
 # <goal>
 
-## 요구사항
-- [ ] R1: <requirement 1>
-- [ ] R2: <requirement 2>
+**코드 루트**: `<path>` (선택 — 공통 prefix 있으면)
+
+## 배경
+2-3 문장. 왜 이 worklog 가 필요한지.
+
+## AS-IS → TO-BE (선택)
+한눈에 상태 대비가 필요하면 표/서술 중 편한 형식.
+
+## Non-goals (선택)
+- 스코프 밖 한 줄씩
 
 ## 설계
-(architect가 작성)
+(architect 가 작성 — 결정 + 리스크만)
 
 ## 태스크
-(planner가 작성 — orchestrator가 완료 시 체크박스 + worklog 추가)
+(순서: 완료 → 진행 중 → 대기 = 시간 순)
+
+### 완료
+(비어 있음)
+
+### 진행 중
+(비어 있음)
+
+### 대기
+(planner 가 skeleton, test-planner 가 AC 추가)
 
 ## 향후 과제
 ```
@@ -111,7 +127,7 @@ Agent({
   subagent_type: "lstack:explorer",
   prompt: <포함>
     - plan.md 경로
-    - "## 요구사항만 읽고 (## 설계는 읽지 말 것), 코드베이스 사실표를 반환하세요. 평가 금지."
+    - "## 배경만 읽고 (## 설계는 읽지 말 것), 코드베이스 사실표를 반환하세요. 평가 금지."
 })
 ```
 
@@ -131,27 +147,30 @@ Agent({
 
 codex-architect 가 내부에서 Codex availability 체크 후 분기. 어느 backend 갔는지 `DESIGN_BACKEND` 로 보고.
 
-### 2.4: test-planner
-
-```
-Agent({
-  subagent_type: "lstack:test-planner",
-  prompt: <포함>
-    - plan.md 경로
-    - "plan.md를 읽고 ## 요구사항의 각 항목에 AC 체크박스를 추가하세요"
-})
-```
-
-### 2.5: planner
+### 2.4: planner (태스크 skeleton)
 
 ```
 Agent({
   subagent_type: "lstack:planner",
   prompt: <포함>
     - plan.md 경로
+    - architect 의 <memo> (Phase 2.2-2.3 산출물 중 plan.md 에 쓰지 않은 파일 힌트)
     - Execute Agent Pool 목록
+    - "## 태스크 › ### 대기 를 작성 (skeleton — 태스크 제목 + exec agent + 1-3줄 구현 힌트).
+       AC 는 비워둘 것 (test-planner 가 Phase 2.5 에서 채움). ## 요구사항 섹션 만들지 말 것."
+})
+```
+
+### 2.5: test-planner (각 태스크 밑에 AC)
+
+```
+Agent({
+  subagent_type: "lstack:test-planner",
+  prompt: <포함>
+    - plan.md 경로
     - Verify Agent Pool 목록
-    - "plan.md를 읽고 ## 태스크 섹션을 작성하세요"
+    - "plan.md 를 읽고 ## 태스크 › ### 대기 의 각 태스크 아래에 AC 체크박스를 추가하세요.
+       ## 요구사항 섹션은 만들지 말 것 (이 구조에는 없다)."
 })
 ```
 

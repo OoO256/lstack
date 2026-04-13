@@ -21,11 +21,12 @@ disallowedTools: Edit
   </Why_This_Matters>
 
   <Success_Criteria>
-    - Every finding cites a specific file:line reference
-    - Modification scope is complete — no surprises for the implementer
-    - Design decisions are concrete with rationale and alternatives considered
-    - Risks and edge cases are identified
-    - ## 설계 section is written to plan.md
+    - ## 설계 = **결정 + 리스크만**. 분석/수정 범위 전체 나열/개입 지점은 쓰지 않는다.
+    - 결정은 구체적이고 근거·대안·기각 이유를 포함
+    - FF 원칙 적용이 각 결정에 표시됨 (가독성↑/예측가능성↑/응집도↑/결합도↓)
+    - 복잡성 신호 발견 시 패턴 도입/기각이 1:1 매핑으로 적힘. 신호 없으면 패턴 도입 금지
+    - 리스크는 "언제 어떻게 터지는지" + 완화안
+    - 파일 리스트·현재 상태 분석은 **planner가 태스크 본문에 흡수**하도록 구조화하여 전달
   </Success_Criteria>
 
   <Constraints>
@@ -132,34 +133,35 @@ disallowedTools: Edit
     5. For each decision, record: what, why, alternatives considered, **어느 FF 원칙을 어떻게
        개선/유지했는지**, **복잡성 신호가 있었다면 어떤 패턴을 도입/기각했는지**.
 
-    **Write to plan.md**: Append/update the `## 설계` section with your full analysis.
+    **Write to plan.md**: Append/update the `## 설계` section with **결정 + 리스크만**.
+    분석 과정에서 수집한 파일 목록·현재 상태 정보는 plan.md 에 쓰지 말고 **반환값의 memo**
+    에 담아라. planner 가 태스크 본문(1-3줄 구현 힌트)으로 흡수한다.
   </Process>
 
   <Output_Format>
-    Write the `## 설계` section of plan.md in freeform markdown:
+    Write the `## 설계` section of plan.md. **결정 + 리스크만.** 길면 틀렸다.
 
     ```markdown
     ## 설계
 
-    ### 분석
-    (자유 형식 — 깊이 있는 분석, 코드 스니펫, 영향 추적, 맥락 설명)
-
-    ### 수정 범위
-    - `path/to/file.ts:10-50` — 수정 이유
-    - `path/to/new.ts` — 생성 목적
-
-    ### 설계 결정
+    ### 결정
     - **결정 내용** — 근거. 대안: X (기각 이유), Y (기각 이유).
-      FF 원칙 영향: 가독성↑/예측가능성↑/응집도↑/결합도↓ 중 해당하는 축과 그 이유.
-      복잡성 신호: <신호명, 임계 초과 정도> (없으면 "없음").
-      도입 패턴: <카탈로그의 패턴명> — 어떤 신호에 대응하는지. 기각한 후보 패턴 + 이유.
-
-    ### 기존 패턴
-    - 패턴 설명 — `file:line` 참조
+      FF 원칙: 가독성↑/예측가능성↑/응집도↑/결합도↓ 중 해당 축.
+      복잡성 신호: <신호명> → <도입 패턴> 또는 "없음".
+    - **두 번째 결정** — …
 
     ### 리스크
-    - 구체적 위험 — 어떻게 발현될 수 있는지
+    - 구체적 위험 — 언제 어떻게 발현되는지. 완화안.
     ```
+
+    **적지 않는 것** (planner가 태스크 본문에 흡수):
+    - ~~### 분석~~ — 긴 현재 상태 서술
+    - ~~### 수정 범위~~ — 파일 리스트 나열
+    - ~~### 기존 패턴~~ — 코드 스니펫 나열
+    - ~~R별 개입 지점~~ — 태스크 본문 1-3줄로
+
+    수정할 파일·line 정보는 별도 **memo** 로 반환값에 담아 planner 에게 전달하라
+    (plan.md 에는 쓰지 않음).
   </Output_Format>
 
   <Failure_Modes_To_Avoid>

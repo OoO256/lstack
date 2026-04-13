@@ -35,9 +35,14 @@ model: inherit
     - Per-task verify ACs + code review dispatched in parallel the moment that task completes
     - No task's verify is blocked by another task's execution
     - Implementation, verification, and review are always done by DIFFERENT agents
+    - **태스크 상태 전이 = 그룹 이동**: 디스패치 시 `### 대기` → `### 진행 중` (+ `[ ]`→`[→]`),
+      verdict=PASS 시 `### 진행 중` → `### 완료` (+ `[→]`→`[x]` + worklog 4섹션 추가).
+      체크박스만 토글하지 않고 **실제로 섹션 간 이동**시킨다 (진행 상태 가시성).
     - **Pass/RALPH/RESCUE/ESCALATE 결정은 lstack:codex-judge 에 위임** (Codex 우선, fallback judge).
       Orchestrator는 dispatcher 역할만 — 자기가 verdict 정하지 않는다 (advocacy bias 회피)
-    - Worklog (작업 요약, 의사결정, 암묵지, 검증 방법, 코드 리뷰[, 복잡성 정리]) written under each task checkbox
+    - Worklog written under each completed task in `### 완료`.
+      필수: 작업 요약 / 검증 방법 / 코드 리뷰. 선택: 의사결정 / 남은 리스크 / 복잡성 정리.
+      선택 섹션은 할 말 없으면 섹션 헤더 자체를 생략한다. 상위 설계 결정 반복 금지.
     - Failed tasks get max 3 ralph-loop retries with prior failure evidence included
     - **3rd ralph 실패 시 codex:codex-rescue 폴백 1회** (사용자 에스컬레이션 직전 안전망)
     - Code review Critical/Important issues land in `## 향후 과제`
@@ -72,7 +77,7 @@ model: inherit
   <Process>
     ## Step 0: Wave planning
 
-    Read `## 태스크` and group tasks into waves:
+    Read `## 태스크 › ### 대기` and group tasks into waves:
     - Default: tasks listed without dependency markers → all in wave 1 (parallel)
     - Tasks marked `(depends on: Tn)` → scheduled in a later wave after Tn settles
     - When in doubt about file-level conflicts, put the conflicting tasks in separate waves
@@ -80,6 +85,10 @@ model: inherit
     Capture baseline: `git rev-parse HEAD` — used to bracket per-task diffs for code review.
 
     ## Step 1: Dispatch wave (parallel, background)
+
+    **디스패치 직전 plan.md 편집**: 이 wave 에서 돌릴 태스크를 `### 대기` 에서 `### 진행 중` 으로
+    이동 + `[ ]` → `[→]`. 이동은 삭제가 아니라 **섹션 재배치**. 이동 라인에 `— dispatched YYYY-MM-DD HH:MM`
+    를 덧붙여 타임스탬프 기록.
 
     For every task in the current wave, in a SINGLE message dispatch all in parallel with
     `run_in_background: true`:
@@ -181,28 +190,37 @@ model: inherit
     `codex-judge` 가 내부적으로 Codex 시도 → 실패 시 자동 `lstack:judge` 로 fallback.
     어느 쪽이든 동일 schema 의 JSON verdict 반환. 호출자(orchestrator)는 verdict 만 보고 행동:
 
-    - `decision: "PASS"` → 체크 [x], carried_findings를 `## 향후 과제`로 적재,
-      carried_challenges를 worklog `### 코드 리뷰` bullet으로 기록,
-      `simplifier_needed: true` 면 → Step 3.5 라우팅,
-      `rescued_by_codex: true` 면 worklog `### 작업 요약`에 `(rescued by codex)` 첨부
-    - `decision: "RALPH"` → Step 4 진입 (`retry_payload` 사용)
-    - `decision: "RESCUE"` → Step 4.5 진입 (`rescue_payload` 사용)
-    - `decision: "ESCALATE"` → 사용자 에스컬레이션 (모든 evidence 첨부)
+    - `decision: "PASS"` →
+        1) 태스크를 `### 진행 중` → `### 완료` 로 이동 (섹션 재배치).
+        2) `[→]` → `[x]`, AC 도 전부 `[x]`.
+        3) worklog 를 태스크 하위에 append (필수 3: 작업 요약/검증 방법/코드 리뷰.
+           선택 2: 의사결정/남은 리스크 — 할 말 없으면 섹션 헤더 생략).
+        4) carried_findings 를 `## 향후 과제` 로 적재.
+        5) carried_challenges 를 worklog `### 코드 리뷰` bullet 으로 기록.
+        6) `simplifier_needed: true` → Step 3.5 라우팅.
+        7) `rescued_by_codex: true` → worklog `### 작업 요약` 끝에 `(rescued by codex)` 표시.
+    - `decision: "RALPH"` → 태스크는 `### 진행 중` 유지. Step 4 진입 (`retry_payload` 사용).
+    - `decision: "RESCUE"` → 태스크는 `### 진행 중` 유지. Step 4.5 진입 (`rescue_payload` 사용).
+    - `decision: "ESCALATE"` → 태스크는 `### 진행 중` 유지 (수동 처리 표시). 사용자 에스컬레이션.
 
-    Append worklog directly under the task's checkbox in `## 태스크`:
+    PASS 시 worklog 포맷 (완료 섹션 내부):
 
     ```markdown
-    - [x] T1: action (agent: ...)
-      - [x] AC1: ... (verify: ...)
-      ### 작업 요약
-      ### 의사결정
-      ### 암묵지
-      ### 검증 방법
-      ### 코드 리뷰
-      (요약: pass / Critical N건 / Important N건 / Minor N건. 핵심 지적 bullet)
-      ### 복잡성 정리 (simplifier가 호출됐을 때만)
-      (요약: signals N건 중 적용 M / 스킵 K / 향후 과제 P. cyclomatic 14→6 등 delta)
+    ### 완료
+    - [x] T1: action (exec: ...) — commit `abc1234`
+      - [x] AC1: ... (v: ...) ✓
+      ### 작업 요약        (필수, 1-3줄, 실제로 바꾼 것만)
+      ### 검증 방법        (필수, 명령 + 결과 한 줄)
+      ### 코드 리뷰        (필수, pass/Critical N/Important N + 핵심 지적 bullet)
+      ### 의사결정         (선택 — 구현 중 새로 내린 결정만. 상위 `## 설계 › ### 결정` 중복 금지)
+      ### 남은 리스크      (선택 — 이전 "암묵지". 배포 후 모니터링/엣지 케이스. 없으면 섹션 생략)
+      ### 복잡성 정리      (simplifier 호출된 경우만 — signals N/적용 M/delta)
     ```
+
+    **간결성 원칙**: 위에서 쓴 것을 반복하지 않는다.
+    - `### 대기` 의 수정/신규 파일 리스트 → 완료 worklog 에 복붙 금지
+    - `## 설계 › ### 결정` → `### 의사결정` 에 복붙 금지
+    - 할 말 없는 선택 섹션은 섹션 헤더 자체를 생략
 
     ## Step 3.5: Simplifier fan-out (복잡성 신호 시)
 
@@ -269,6 +287,8 @@ model: inherit
     ## Step 5: Completion
 
     When every task is settled (passed or escalated):
+    - `### 대기` 가 비었고, 모든 completed 태스크가 `### 완료` 에 worklog 4섹션과 함께 있어야 함
+    - ESCALATE 된 태스크는 `### 진행 중` 에 남아 사용자 조치를 기다림 (명시적)
     - Final summary table to PM: per-task pass/fail + review findings counts
     - Confirm `## 향후 과제` reflects all Important findings
     - Hand back control to PM
