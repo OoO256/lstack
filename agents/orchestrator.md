@@ -46,7 +46,7 @@ model: inherit
     - Failed tasks get max 3 ralph-loop retries with prior failure evidence included
     - **3rd ralph 실패 시 codex:codex-rescue 폴백 1회** (사용자 에스컬레이션 직전 안전망)
     - Code review Critical/Important issues land in `## 향후 과제`
-    - **Code review 복잡성 신호 시 simplifier 자동 fan-out** — 동작 보존 전제 리팩터, 회귀 시 자동 revert
+    - **Code review 복잡성 신호 시 codex-architect (review mode) 자동 fan-out** — 동작 보존 전제 리팩터, 회귀 시 자동 revert
     - **Per-task fan-out에 Codex adversarial-review 추가** (LOC > 50 게이트, fail-soft)
     - Codex 호출 실패는 워크플로우를 차단하지 않는다 (best-effort 2nd opinion)
   </Success_Criteria>
@@ -195,7 +195,7 @@ model: inherit
         3) 결과 기록 (아래 형식).
         4) carried_findings (Critical/Important) → `## 향후 과제`로 적재.
         5) carried_challenges → 향후 과제 bullet으로 기록.
-        6) `simplifier_needed: true` → Step 3.5 라우팅.
+        6) `review_needed: true` → Step 3.5 라우팅.
         7) `rescued_by_codex: true` → 결과 요약 끝에 `(rescued by codex)` 표시.
     - `decision: "RALPH"` → 태스크 헤더 `— 진행중` 유지. Step 4 진입 (`retry_payload` 사용).
     - `decision: "RESCUE"` → 태스크 헤더 `— 진행중` 유지. Step 4.5 진입 (`rescue_payload` 사용).
@@ -224,30 +224,31 @@ model: inherit
     - 프로세스(검증 방법, 코드 리뷰 로그, 복잡성 정리)는 **적지 않는다**.
     - 대기 때 적은 수정/신규 파일 리스트를 결과에 반복하지 않는다.
 
-    ## Step 3.5: Simplifier fan-out (복잡성 신호 시)
+    ## Step 3.5: codex-architect review fan-out (복잡성 신호 시)
 
     Code review가 복잡성 신호를 보고했을 때만 진입. ralph-loop 와는 별도 — 동작 보존
     리팩터 시도이지 실패 재시도가 아니다.
 
     ```
     Agent({
-      subagent_type: "lstack:simplifier",
+      subagent_type: "lstack:codex-architect",
       run_in_background: true,
       prompt:
+        - "mode: review"
         - 대상 task id + 파일 목록 + 코드 리뷰가 보고한 복잡성 신호(file:line + 신호명 + 임계 초과치)
         - 해당 task의 ACs (재검증용)
         - 해당 task의 commit SHA(s)
-        - "동작 보존 전제로 카탈로그 패턴을 적용해 신호를 줄여라. SIMPLIFIER_REPORT 를 반환."
+        - "동작 보존 전제로 패턴 카탈로그를 적용해 신호를 줄여라. REVIEW_REPORT 를 반환."
     })
     ```
 
-    Simplifier 결과 처리:
+    codex-architect (review mode) 결과 처리:
     - **Behavior preserved + signals reduced** → 변경 commit 그대로 둠. task 통과.
-    - **Behavior regression (AC 실패)** → simplifier가 자체 revert. 미해결 신호는 향후 과제에
+    - **Behavior regression (AC 실패)** → 자체 revert. 미해결 신호는 향후 과제에
       기록. task 통과 (review가 차단하지 않는 한).
     - **Deferred signals** → `## 향후 과제`에 추가.
 
-    Simplifier 실패 시 ralph-loop은 트리거하지 않는다 (구현은 이미 통과한 상태). 복잡성은
+    Review 실패 시 ralph-loop은 트리거하지 않는다 (구현은 이미 통과한 상태). 복잡성은
     품질 개선 시도이지 정확성 게이트가 아니다.
 
     ## Step 4: Ralph-loop (on failure, max 3) → Codex Rescue 폴백 → 사용자 에스컬레이션

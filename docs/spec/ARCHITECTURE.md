@@ -26,9 +26,9 @@ lstack/
 - **트리거**: `/lstack`, `/start`, "시작", "이어서", "계속", "resume", "이거 만들어", "이거 고쳐"
 - **역할**: 단일 진입점. **Phase 0에서 worklog 스캔 + plan.md 섹션 상태로 현재 phase 자동 추론**,
   새 작업 / 이어서 작업을 판별 후 알맞은 phase agent를 dispatch.
-- **워크플로우**: [State Detect] → Interview → Design (architect → test-planner → planner) →
-  **Codex Adversarial Design Review** → Execute+Verify+Review (orchestrator, pipelined,
-  per-task FF + Codex adversarial fan-out, 복잡성 시 simplifier, 3회 ralph 실패 시
+- **워크플로우**: [State Detect] → Interview → Design (codex-architect → planner → test-planner) →
+  사용자 승인 → Execute+Verify+Review (orchestrator, pipelined,
+  per-task FF + Codex adversarial fan-out, 복잡성 시 codex-architect review, 3회 ralph 실패 시
   Codex Rescue 폴백) → Spec 업데이트 → Compound
 - **원칙**: `docs/spec/PRINCIPLE.md` 참조
 
@@ -51,15 +51,12 @@ lstack/
 
 | Agent | 경로 | Phase | 역할 |
 |-------|------|-------|------|
-| explorer | `agents/explorer.md` | Design 2.1 | READ-ONLY 기계적 코드베이스 사실 수집 (haiku). 평가/제안 금지. anchor 분리 목적 |
-| codex-architect | `agents/codex-architect.md` | Design 2.2-2.3 | **Codex 우선**, fallback = `lstack:architect`. explorer 사실표 + 요구사항으로 1st principles 설계. FF 원칙 + 복잡성 패턴 카탈로그 적용 |
-| architect | `agents/architect.md` | Design (fallback) | codex-architect의 fallback. Codex 미가용 시 자동 호출. 동일 산출 (## 설계) |
+| codex-architect | `agents/codex-architect.md` | Design + Review (SSOT) | 두 모드: design (조사+설계) / review (동작 보존 리팩터). Codex 가용 → Codex, 미가용 → Claude |
 | test-planner | `agents/test-planner.md` | Design 2.4 | 최소 테스트 시나리오 설계. 코드 작성 안 함 |
 | planner | `agents/planner.md` | Design 2.5 | tasks.json 작성. agent pool 참조 |
 | orchestrator | `agents/orchestrator.md` | Execute+Verify+Review | wave 단위 백그라운드 병렬 task dispatch + 완료 즉시 verify ACs ∥ FF code review ∥ Codex adversarial(LOC>50) fan-out. **결정은 codex-judge에 위임** (advocacy bias 회피) |
 | codex-judge | `agents/codex-judge.md` | Verify 결정 | **Codex 우선**, fallback = `lstack:judge`. 수집된 evidence로 PASS/RALPH/RESCUE/ESCALATE 결정. orchestrator dispatcher와 분리 |
 | judge | `agents/judge.md` | Verify 결정 (fallback) | codex-judge의 fallback. 동일 결정 룰 적용. 단독 사용 가능 |
-| simplifier | `agents/simplifier.md` | Execute (post-review) | 코드 리뷰가 보고한 복잡성 신호에 패턴 카탈로그 적용. 동작 보존, 회귀 시 자동 revert |
 | harness-sage | `agents/harness-sage.md` | Compound | worktree 격리 후 코드 구현 + issue/PR 생성 |
 
 ### 외부 Agent Pool
@@ -98,8 +95,7 @@ lstack/
 
 | 시점 | 호출 방식 | Fallback | 용도 |
 |------|-----------|----------|------|
-| Phase 2.2-2.3 설계 (1st principles) | Agent: `lstack:codex-architect` (내부에서 Codex 호출) | `lstack:architect` | 설계 perspective에 다른 모델. explorer 사실표 anchor 분리와 결합 |
-| Phase 2.6 (설계 후, 사용자 승인 전) | Bash → `codex-companion adversarial-review --background` | 없음 (skip with warning) | 설계/접근/가정 도전. 사용자가 plan.md + Codex 도전을 함께 보고 승인 |
+| Phase 2.1-2.3 조사+설계 | Agent: `lstack:codex-architect` | 자체 fallback (Claude) | Codex 가용 → 전체 위임. 미가용 → Claude 전체 수행 |
 | 각 task 완료 후 fan-out (LOC > 50 게이트) | Bash → `codex-companion adversarial-review --wait` | 없음 (skip with warning) | 변경 부분에 대한 2nd opinion. FF review와 평행 |
 | Verify 후 PASS/RALPH/RESCUE/ESCALATE 결정 | Agent: `lstack:codex-judge` (내부에서 Codex 호출) | `lstack:judge` | 판정 perspective에 다른 모델. orchestrator dispatcher와 분리 (advocacy bias 회피) |
 | Ralph-loop 3회 실패 후 사용자 에스컬레이션 직전 | Agent: `codex:codex-rescue --write` | 없음 (바로 에스컬레이션) | 다른 모델의 마지막 시도. 통과 시 정상 완료 |
@@ -146,19 +142,15 @@ lstack Skill (PM 진입점)
     │  Phase 0: State Detect ── worklog 스캔 + plan.md 섹션 분석 → 새 작업/resume 판별
     │  Phase 1: Interview ─── hoyeon:interviewer
     │  Phase 2: Design
-    │     2.1 explorer ──────── READ-ONLY 사실표 (anchor 분리)
-    │     2.2-2.3 codex-architect (Codex 우선, fallback = architect)
-    │                            ─ 사실표 + 요구사항 → 1st principles 설계
+    │     2.1-2.3 codex-architect ── 조사 (정적 + 런타임) → Codex/Claude 설계
     │     2.4 planner ──────── ## 태스크 › ### Tn: (skeleton — action + exec + 힌트 1-3줄)
-    │     2.5 test-planner ─── 각 태스크 밑에 AC 추가 (요구사항 섹션 없음)
-    │     2.6 Codex adversarial ─ design 자체 도전 (assumption/approach/tradeoff)
-    │                              → plan.md + Codex 도전을 함께 사용자에게 (사용자 승인)
+    │     2.5 test-planner ─── 각 태스크 밑에 AC 추가 → 사용자 승인
     │  Phase 3+4: Execute+Verify+Review (pipelined)
     │     orchestrator ─────── wave 단위 백그라운드 병렬 dispatch
     │       └─ 각 task 완료 → verify ACs ∥ FF review ∥ Codex adversarial(LOC>50) fan-out
     │       └─ evidence 패키지 → codex-judge (Codex 우선, fallback = judge)
     │           → PASS / RALPH / RESCUE / ESCALATE 결정
-    │       └─ 복잡성 신호 → simplifier fan-out (동작 보존 패턴 적용)
+    │       └─ 복잡성 신호 → codex-architect (review mode) fan-out
     │       └─ 3회 ralph 실패 → Codex Rescue 폴백 1회 → 그래도 실패 시 사용자 에스컬레이션
     │  Phase 5: Spec 업데이트 ── docs/spec/ SSOT 반영
     │  Phase 6: Compound ───── /compound (하니스 문제 시)

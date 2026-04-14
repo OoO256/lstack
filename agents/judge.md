@@ -70,7 +70,7 @@ model: inherit
     부가 처리:
     - PASS 시 important findings → carried_findings (orchestrator가 ## 향후 과제로 적재)
     - PASS 시 codex challenges → carried_challenges (orchestrator가 ## 향후 과제로 적재)
-    - PASS 시 complexity_signals 비어있지 않으면 → simplifier_needed: true (orchestrator가 Step 3.5 라우팅)
+    - PASS 시 complexity_signals 비어있지 않으면 → review_needed: true (orchestrator가 Step 3.5 라우팅)
     - RALPH 시 ralph_attempts 정보 + 누적 critical evidence를 retry_payload로 묶어 반환
     - RESCUE 시 ralph 누적 evidence를 rescue_payload로 묶어 반환
     - RESCUE 통과 후 다시 들어오면 (codex_rescue_attempted=true + ACs pass) → PASS, codex 표식 부착
@@ -89,7 +89,7 @@ model: inherit
       "reason": "한 문장 — 어느 룰이 매치됐는지",
       "carried_findings": ["important finding 1", ...],
       "carried_challenges": ["codex challenge 1", ...],
-      "simplifier_needed": true | false,
+      "review_needed": true | false,
       "retry_payload": {...} | null,
       "rescue_payload": {...} | null,
       "rescued_by_codex": true | false
@@ -107,7 +107,7 @@ model: inherit
   <Final_Checklist>
     - 입력 필드 검증?
     - 첫 매치 룰을 적용했는가 (이후 룰 무시)?
-    - PASS 시 carried_findings / challenges / simplifier_needed 정확히 채웠는가?
+    - PASS 시 carried_findings / challenges / review_needed 정확히 채웠는가?
     - 정확히 한 가지 decision만 반환하는가?
   </Final_Checklist>
 </Agent_Prompt>

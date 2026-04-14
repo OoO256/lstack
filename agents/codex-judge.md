@@ -68,7 +68,7 @@ model: inherit
     4순위: 그 외 → RALPH
     부가:
     - PASS 시 important → carried_findings, codex challenges → carried_challenges,
-      complexity_signals 있으면 simplifier_needed=true
+      complexity_signals 있으면 review_needed=true
     - RALPH 시 누적 evidence 를 retry_payload로 반환
     - RESCUE 시 rescue_payload로 반환
     - 직전 RESCUE 통과 후 재진입 (codex_rescue_attempted=true + ACs pass) → PASS, rescued_by_codex=true
@@ -81,7 +81,7 @@ model: inherit
       "reason": "string (한 문장)",
       "carried_findings": ["string", ...],
       "carried_challenges": ["string", ...],
-      "simplifier_needed": true | false,
+      "review_needed": true | false,
       "retry_payload": object | null,
       "rescue_payload": object | null,
       "rescued_by_codex": true | false
