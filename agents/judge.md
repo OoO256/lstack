@@ -69,7 +69,7 @@ model: inherit
 
     부가 처리:
     - PASS 시 important findings → carried_findings (orchestrator가 ## 향후 과제로 적재)
-    - PASS 시 codex challenges → carried_challenges (worklog ### 코드 리뷰 bullet)
+    - PASS 시 codex challenges → carried_challenges (orchestrator가 ## 향후 과제로 적재)
     - PASS 시 complexity_signals 비어있지 않으면 → simplifier_needed: true (orchestrator가 Step 3.5 라우팅)
     - RALPH 시 ralph_attempts 정보 + 누적 critical evidence를 retry_payload로 묶어 반환
     - RESCUE 시 ralph 누적 evidence를 rescue_payload로 묶어 반환

@@ -40,66 +40,68 @@
 - **BGM/SFX 볼륨 밸런싱** — BGM이 나레이션 덮거나 SFX가 산만. 완화: 카탈로그에 구체 값 명시(BGM 나레이션 중 0.1-0.15, 무나레이션 0.25-0.3, SFX 0.4-0.6).
 
 ## 태스크
-(순서: 완료 → 진행 중 → 대기)
 
-### 완료
-(없음 — 방금 설계 승인 직후)
+### T1: 서사 구조 + 훅 패턴 (exec: executor)
+신규: `skills/plan/references/narrative-structure.md` — 3-Act + Hook 유형 + Act 전환 시그널, 500단어 이내
+수정: `skills/plan/rules/planning-guide.md:69` — Hook(0-3초) 필수 + 3-act 명시 룰
+수정: `skills/plan/SKILL.md:31` — narrative-structure.md를 "항상 참조"로
+수정: `agents/qa-plan.md:34` — Hook 체크 항목 추가
 
-### 진행 중
-(없음)
+- [ ] AC1: narrative-structure.md 존재 + 3-Act + Hook 유형 + Act 전환 포함, 500단어 이내 (v: code-reviewer)
+- [ ] AC2: planning-guide.md에 Hook 필수 + 3-act 룰이 있다 (v: verifier)
+- [ ] AC3: qa-plan.md 평가 기준에 Hook(0-3s) 체크 있음 (v: verifier)
 
-### 대기
+### T2: 레퍼런스 주입 회로 (exec: executor)
+수정: `../CLAUDE.md:126` — 첨부 파일 시각 분석 + moodboard 등록 프로세스 (Director는 Opus, 멀티모달)
+수정: `agents/asset-prompter.md:62` — `<Prompt_Engineering>`에 moodboard 활용 룰
+수정: `skills/plan/rules/interview-guide.md:28` — 레퍼런스 분석 프로세스
 
-- [ ] T1: 서사 구조 + 훅 패턴 (exec: executor)
-  신규: `skills/plan/references/narrative-structure.md` — 3-Act + Hook 유형 + Act 전환 시그널, 500단어 이내
-  수정: `skills/plan/rules/planning-guide.md:69` — Hook(0-3초) 필수 + 3-act 명시 룰
-  수정: `skills/plan/SKILL.md:31` — narrative-structure.md를 "항상 참조"로
-  수정: `agents/qa-plan.md:34` — Hook 체크 항목 추가
-  - [ ] AC1: narrative-structure.md 존재 + 3-Act + Hook 유형 + Act 전환 포함, 500단어 이내 (v: code-reviewer)
-  - [ ] AC2: planning-guide.md에 Hook 필수 + 3-act 룰이 있다 (v: verifier)
-  - [ ] AC3: qa-plan.md 평가 기준에 Hook(0-3s) 체크 있음 (v: verifier)
+- [ ] AC4: CLAUDE.md에 시각 분석 + moodboard 등록 프로세스 있음 (v: verifier)
+- [ ] AC5: asset-prompter.md에 moodboard 활용 룰 있음 (v: verifier)
+- [ ] AC6: interview-guide.md에 레퍼런스 분석 프로세스 있음 (v: verifier)
 
-- [ ] T2: 레퍼런스 주입 회로 (exec: executor)
-  수정: `../CLAUDE.md:126` — 첨부 파일 시각 분석 + moodboard 등록 프로세스 (Director는 Opus, 멀티모달)
-  수정: `agents/asset-prompter.md:62` — `<Prompt_Engineering>`에 moodboard 활용 룰
-  수정: `skills/plan/rules/interview-guide.md:28` — 레퍼런스 분석 프로세스
-  - [ ] AC4: CLAUDE.md에 시각 분석 + moodboard 등록 프로세스 있음 (v: verifier)
-  - [ ] AC5: asset-prompter.md에 moodboard 활용 룰 있음 (v: verifier)
-  - [ ] AC6: interview-guide.md에 레퍼런스 분석 프로세스 있음 (v: verifier)
+### T3: dev/asset-prompter 폴백 차단 (exec: executor) — 완료 `a1b2c3d`
+수정: `agents/dev.md:30` — 단색 placeholder 폴백 제거, `<Visual_Impact_Rules>` 신규
+수정: `agents/asset-prompter.md:36` — 폴백을 Director 에스컬레이션으로
 
-- [ ] T3: dev/asset-prompter 폴백 차단 (exec: executor)
-  수정: `agents/dev.md:30` — 단색 placeholder 폴백 제거, `<Visual_Impact_Rules>` 신규 (배경 에셋 필수 / 레이어 깊이감 / 정보 밀도 4-5개)
-  수정: `agents/asset-prompter.md:36` — 폴백을 Director 에스컬레이션으로
-  - [ ] AC7: dev.md `<Scope>`에서 placeholder 폴백 제거 + 단색 금지 룰 있음 (v: verifier)
-  - [ ] AC8: dev.md에 `<Visual_Impact_Rules>` 섹션 있음 (v: verifier)
-  - [ ] AC9: asset-prompter.md 폴백이 재시도 + 에스컬레이션으로 바뀜 (v: code-reviewer)
+단색 폴백 제거 + Director 에스컬레이션 경로 교체. dev.md에 Visual_Impact_Rules 섹션 추가.
 
-- [ ] T4: 카메라 워크 카탈로그 (exec: executor)
-  신규: `skills/remotion-best-practices/rules/camera-motion.md` — Zoom/Pan/Parallax/Ken Burns 4패턴 + 코드 스니펫
-  신규: `skills/remotion-best-practices/rules/assets/camera-ken-burns.tsx`
-  수정: `agents/dev.md` — `<Motion_Rules>` 신규, `<Skill_Reference>`에 camera-motion 추가
-  수정: `skills/remotion-best-practices/SKILL.md` — Camera Motion 항목
-  - [ ] AC10: camera-motion.md에 4가지 패턴 + 코드 스니펫 (v: code-reviewer)
-  - [ ] AC11: camera-ken-burns.tsx가 `bun run typecheck` 통과 (v: test-engineer)
-  - [ ] AC12: dev.md에 `<Motion_Rules>` + `<Skill_Reference>` 업데이트 (v: verifier)
+**의사결정**: hard error 대신 에스컬레이션 선택 — asset-prompter가 재시도 1회 후 Director에게 올림.
+**남은 리스크**: asset-prompter 타임아웃 시 에스컬레이션 무한 루프 가능 — 재시도 횟수 제한 필요.
 
-- [ ] T5: 카이네틱 타이포그래피 (exec: executor)
-  신규: `skills/remotion-best-practices/rules/kinetic-typography.md` — stagger / emphasis bounce / 색상 분리 / 카운트업 (최소 4패턴)
-  신규: `rules/assets/kinetic-stagger-entrance.tsx`, `rules/assets/kinetic-emphasis-bounce.tsx`
-  수정: `agents/dev.md` — `<Typography_Rules>` 신규 (핵심 텍스트 fade-in 금지)
-  수정: `skills/remotion-best-practices/rules/text-animations.md` — 참조 링크
-  - [ ] AC13: kinetic-typography.md에 4패턴 포함 (v: code-reviewer)
-  - [ ] AC14: kinetic-*.tsx 2개가 typecheck 통과 (v: test-engineer)
-  - [ ] AC15: dev.md에 `<Typography_Rules>` + 참조 등록 (v: verifier)
+- [x] AC7: dev.md `<Scope>`에서 placeholder 폴백 제거 + 단색 금지 룰 있음 (v: verifier)
+- [x] AC8: dev.md에 `<Visual_Impact_Rules>` 섹션 있음 (v: verifier)
+- [x] AC9: asset-prompter.md 폴백이 재시도 + 에스컬레이션으로 바뀜 (v: code-reviewer)
 
-- [ ] T6: BGM/SFX 자동 추가 (exec: executor)
-  신규: `skills/remotion-best-practices/rules/bgm-sfx-catalog.md` — 분위기별 Gemini 프롬프트 / SFX 타이밍 / Remotion 코드 패턴 + 볼륨 값
-  수정: `agents/dev.md` — `<Audio_Rules>` 신규 (BGM 최상위 Audio, 전환 SFX)
-  수정: `agents/asset-prompter.md` — BGM 생성 제안 룰, 프롬프트 가이드
-  수정: `skills/plan/rules/planning-guide.md` — "BGM 1영상 1트랙" 룰
-  - [ ] AC16: bgm-sfx-catalog.md에 프롬프트 템플릿 + SFX 타이밍 + 코드 패턴 (v: code-reviewer)
-  - [ ] AC17: dev.md `<Audio_Rules>` + 볼륨 값 명시 (v: verifier)
-  - [ ] AC18: asset-prompter.md에 BGM 가이드 추가 (v: verifier)
+### T4: 카메라 워크 카탈로그 (exec: executor) — 진행중
+신규: `skills/remotion-best-practices/rules/camera-motion.md` — Zoom/Pan/Parallax/Ken Burns 4패턴 + 코드 스니펫
+신규: `skills/remotion-best-practices/rules/assets/camera-ken-burns.tsx`
+수정: `agents/dev.md` — `<Motion_Rules>` 신규, `<Skill_Reference>`에 camera-motion 추가
+수정: `skills/remotion-best-practices/SKILL.md` — Camera Motion 항목
+
+- [ ] AC10: camera-motion.md에 4가지 패턴 + 코드 스니펫 (v: code-reviewer)
+- [ ] AC11: camera-ken-burns.tsx가 `bun run typecheck` 통과 (v: test-engineer)
+- [ ] AC12: dev.md에 `<Motion_Rules>` + `<Skill_Reference>` 업데이트 (v: verifier)
+
+### T5: 카이네틱 타이포그래피 (exec: executor)
+신규: `skills/remotion-best-practices/rules/kinetic-typography.md` — stagger / emphasis bounce / 색상 분리 / 카운트업 (최소 4패턴)
+신규: `rules/assets/kinetic-stagger-entrance.tsx`, `rules/assets/kinetic-emphasis-bounce.tsx`
+수정: `agents/dev.md` — `<Typography_Rules>` 신규 (핵심 텍스트 fade-in 금지)
+수정: `skills/remotion-best-practices/rules/text-animations.md` — 참조 링크
+
+- [ ] AC13: kinetic-typography.md에 4패턴 포함 (v: code-reviewer)
+- [ ] AC14: kinetic-*.tsx 2개가 typecheck 통과 (v: test-engineer)
+- [ ] AC15: dev.md에 `<Typography_Rules>` + 참조 등록 (v: verifier)
+
+### T6: BGM/SFX 자동 추가 (exec: executor)
+신규: `skills/remotion-best-practices/rules/bgm-sfx-catalog.md` — 분위기별 Gemini 프롬프트 / SFX 타이밍 / Remotion 코드 패턴 + 볼륨 값
+수정: `agents/dev.md` — `<Audio_Rules>` 신규 (BGM 최상위 Audio, 전환 SFX)
+수정: `agents/asset-prompter.md` — BGM 생성 제안 룰, 프롬프트 가이드
+수정: `skills/plan/rules/planning-guide.md` — "BGM 1영상 1트랙" 룰
+
+- [ ] AC16: bgm-sfx-catalog.md에 프롬프트 템플릿 + SFX 타이밍 + 코드 패턴 (v: code-reviewer)
+- [ ] AC17: dev.md `<Audio_Rules>` + 볼륨 값 명시 (v: verifier)
+- [ ] AC18: asset-prompter.md에 BGM 가이드 추가 (v: verifier)
 
 ## 향후 과제
 - 별도 크리에이티브 디렉터 에이전트 신설 (룰화로 해소 안 될 시 후속 worklog)
@@ -107,3 +109,4 @@
 - 씬 라이브러리 본체 — 현 워크트리에 코드 없음. 별도 worklog에서 위치 확인 후
 - 실험 자동화 인프라 (GH Actions + E2B)
 - 자동 평가 시스템 (AI judge)
+- T3 코드 리뷰: asset-prompter 재시도 횟수 제한 로직 추가 필요 (Important)

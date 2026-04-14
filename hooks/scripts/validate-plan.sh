@@ -17,6 +17,18 @@ if [ "$tool_name" = "Write" ] || [ "$tool_name" = "Edit" ]; then
       if grep -q "^## 요구사항" "$tool_input_path"; then
         errors="${errors}\n- deprecated section: ## 요구사항 (태스크가 단일 SOT — 섹션 삭제 권장)"
       fi
+      # warn if old group sections exist (deprecated)
+      if grep -q "^### 완료$\|^### 진행 중$\|^### 대기$" "$tool_input_path"; then
+        errors="${errors}\n- deprecated group sections: ### 완료/진행 중/대기 (태스크 헤더 suffix로 상태 표시 — 그룹 삭제 권장)"
+      fi
+      # warn if old checkbox task format used
+      if grep -q "^- \[.\] T[0-9]" "$tool_input_path"; then
+        errors="${errors}\n- deprecated task format: - [ ] Tn (### Tn: 헤더 형식으로 변경 권장)"
+      fi
+      # warn if old worklog sub-headers used
+      if grep -q "^  ### 작업 요약\|^  ### 검증 방법\|^  ### 코드 리뷰\|^  ### 복잡성 정리" "$tool_input_path"; then
+        errors="${errors}\n- deprecated worklog sub-headers (결과 중심 인라인 기록으로 변경 권장)"
+      fi
       if [ -n "$errors" ]; then
         echo "PLAN VALIDATION FAILED:${errors}"
       fi

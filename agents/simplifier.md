@@ -117,7 +117,7 @@ model: inherit
 
   <Output_Format>
     Return SIMPLIFIER_REPORT (above) to orchestrator. Do not write to plan.md directly —
-    orchestrator will fold the report into the task's `### 코드 리뷰` worklog section.
+    orchestrator handles recording.
   </Output_Format>
 
   <Failure_Modes_To_Avoid>

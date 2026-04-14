@@ -149,7 +149,7 @@ lstack Skill (PM 진입점)
     │     2.1 explorer ──────── READ-ONLY 사실표 (anchor 분리)
     │     2.2-2.3 codex-architect (Codex 우선, fallback = architect)
     │                            ─ 사실표 + 요구사항 → 1st principles 설계
-    │     2.4 planner ──────── ## 태스크 › ### 대기 (skeleton — action + exec + 힌트 1-3줄)
+    │     2.4 planner ──────── ## 태스크 › ### Tn: (skeleton — action + exec + 힌트 1-3줄)
     │     2.5 test-planner ─── 각 태스크 밑에 AC 추가 (요구사항 섹션 없음)
     │     2.6 Codex adversarial ─ design 자체 도전 (assumption/approach/tradeoff)
     │                              → plan.md + Codex 도전을 함께 사용자에게 (사용자 승인)
@@ -182,7 +182,9 @@ plan.md (단일 SOT — docs/worklogs/YYYY-MM-DD-<goal>/plan.md)
 ## plan.md 구조
 
 모든 상태가 단일 markdown 파일에 존재한다. **요구사항 섹션은 없다** — 태스크가 단일 SOT.
-**설계는 결정 + 리스크만** (현재 상태/파일 리스트는 태스크 본문으로). **태스크는 완료→진행중→대기 시간 순**.
+**설계는 결정 + 리스크만** (현재 상태/파일 리스트는 태스크 본문으로).
+**태스크는 `### Tn:` 헤더**, 상태는 헤더 suffix (`— 진행중` / `— 완료 \`sha\``). 마커 없음 = 대기.
+**결과 중심 기록** — 프로세스(검증 방법, 코드 리뷰 로그)는 적지 않는다.
 자세한 규칙과 좋은 예시는 `skills/write-plan-md/` 참조.
 
 ```markdown
@@ -208,26 +210,27 @@ plan.md (단일 SOT — docs/worklogs/YYYY-MM-DD-<goal>/plan.md)
 - 구체적 위험 — 발현 조건, 완화안
 
 ## 태스크
-(순서: 완료 → 진행 중 → 대기 = 시간 순)
 
-### 완료
-- [x] T0: action (exec: executor) — commit `abc1234`
-  - [x] AC0: ... (v: verifier) ✓
-  ### 작업 요약 (필수, 1-3줄)
-  ### 검증 방법 (필수)
-  ### 코드 리뷰 (필수 — orchestrator)
-  ### 의사결정 (선택 — 상위 설계 결정 중복 금지)
-  ### 남은 리스크 (선택 — 이전 "암묵지")
+### T1: action (exec: executor)
+수정: `path:line` — 이유
+신규: `path` — 목적
 
-### 진행 중
-- [→] T1: action (exec: executor) — dispatched 2026-04-13 14:02
-  - [ ] AC1: ... (v: verifier)
+- [ ] AC1: ... (v: verifier)
+- [ ] AC2: ... (v: code-reviewer)
 
-### 대기
-- [ ] T2: action (exec: executor)
-  수정: `path:line` — 이유
-  신규: `path` — 목적
-  - [ ] AC2: ... (v: code-reviewer)
+### T2: action (exec: executor) — 완료 `abc1234`
+수정: `path:line` — 이유
+
+결과 요약 1-2줄. 계획대로면 생략 가능.
+
+**의사결정**: 구현 중 새로 내린 결정. 없으면 생략.
+**남은 리스크**: 배포 후 주의점. 없으면 생략.
+
+- [x] AC3: ... (v: verifier)
+
+### T3: action (exec: executor) — 진행중
+
+- [ ] AC4: ... (v: verifier)
 
 ## 향후 과제
 ```
