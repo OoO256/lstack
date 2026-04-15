@@ -66,6 +66,14 @@ description: |
 ### 리스크
 - 구체적 위험 → 발현 조건, 완화안
 
+### Codex 검토 (선택)
+Codex critique 결과를 기록하는 블록. Phase 2.2 에서 principal-engineer (Codex) 가 작성.
+`### 결정` 에 대한 비판적 검토 — 동의/도전/추가 리스크/순서 제안.
+
+### 최종 확정 (User 승인 YYYY-MM-DD) (선택)
+사용자가 설계를 승인했음을 기록하는 블록. Phase 2.3 완료 시 작성.
+이 블록이 없으면 Phase 2.3 (승인 대기) 로 판정. 있으면 planner (Phase 2.4) 진입 가능.
+
 > "현재 상태", "수정 범위 전체 리스트", "개입 지점 상세"는 여기 **쓰지 않는다**.
 > 그건 각 태스크 본문에 1-2줄씩 들어간다.
 
@@ -111,7 +119,9 @@ bcrypt + jsonwebtoken으로 구현. auth 에러 별도 처리 추가.
 |------|----------|------|
 | `# <goal>` + `## 배경` | PM (lstack skill) | Phase 1 후 |
 | `## AS-IS → TO-BE` (선택) | architect / PM | Phase 2.2-2.3 또는 Phase 1 |
-| `## 설계` | call-codex-cli(lstack:principal-engineer) | Phase 2.2-2.3 |
+| `## 설계` › `### 결정`, `### 리스크` | call-codex-cli(lstack:principal-engineer) | Phase 2.1-2.2 |
+| `## 설계` › `### Codex 검토` | call-codex-cli(lstack:principal-engineer) Codex critique | Phase 2.2 |
+| `## 설계` › `### 최종 확정` | orchestrator (사용자 승인 기록) | Phase 2.3 |
 | `## 태스크` — `### Tn` skeleton | planner | Phase 2.4 |
 | `## 태스크` — AC 추가 | test-planner | Phase 2.5 |
 | `## 태스크` — 상태 전이 + 결과 기록 | orchestrator | Phase 3+4 |

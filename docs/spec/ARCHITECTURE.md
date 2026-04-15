@@ -213,6 +213,12 @@ plan.md (단일 SOT — docs/worklogs/YYYY-MM-DD-<goal>/plan.md)
 ### 리스크
 - 구체적 위험 — 발현 조건, 완화안
 
+### Codex 검토 (선택)
+Codex critique 결과. Phase 2.2 에서 작성.
+
+### 최종 확정 (User 승인 YYYY-MM-DD) (선택)
+사용자 설계 승인 기록. 이 블록이 없으면 Phase 2.3 (승인 대기).
+
 ## 태스크
 
 ### T1: action (exec: executor)
@@ -238,6 +244,22 @@ plan.md (단일 SOT — docs/worklogs/YYYY-MM-DD-<goal>/plan.md)
 
 ## 향후 과제
 ```
+
+### plan.md 섹션 → Phase 매핑 (SSOT)
+
+orchestrator 가 plan.md 의 섹션 상태로 현재 phase 를 추론할 때 이 표를 참조한다.
+
+| plan.md 섹션 상태 | Phase | 다음 행동 |
+|---|---|---|
+| `## 배경` 없음 | Phase 0 (State Detect) | 새 worklog 생성 또는 기존 worklog 탐색 |
+| `## 배경` 있음, `## 설계` 없음 | Phase 1 (Interview) → Phase 2.1 | interviewer → principal-engineer 설계 |
+| `## 설계` › `### 결정` 있음, `### Codex 검토` 없음 | Phase 2.2 (Codex Critique) | principal-engineer (Codex) critique 호출 |
+| `### Codex 검토` 있음, `### 최종 확정` 없음 | Phase 2.3 (User 승인 대기) | 사용자에게 설계+검토 제시, 피드백 수렴 |
+| `### 최종 확정` 있음, `## 태스크` 에 `### Tn` 없음 | Phase 2.4 (Planner) | planner dispatch |
+| `### Tn` 있음, AC 없음 | Phase 2.5 (Test Designer) | test-planner dispatch |
+| AC 있음, 대기 태스크 존재 | Phase 3+4 (Execute+Verify+Review) | orchestrator pipeline |
+| 모든 태스크 완료 | Phase 5 (Spec 업데이트) | docs/spec/ SSOT 반영 |
+| Phase 5 완료 | Phase 6 (Compound) | /compound (선택) |
 
 ## Compound Self-Improvement Loop
 
