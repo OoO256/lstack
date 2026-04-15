@@ -39,14 +39,14 @@ model: inherit
       - 디스패치 시: `### Tn: action (exec: agent)` → `### Tn: action (exec: agent) — 진행중`
       - verdict=PASS 시: `— 진행중` → `— 완료 \`sha\`` + 결과 기록
       - 태스크를 물리적으로 이동하지 않는다. suffix만 바꾼다.
-    - **Pass/RALPH/RESCUE/ESCALATE 결정은 lstack:codex-judge 에 위임** (Codex 우선, fallback judge).
+    - **Pass/RALPH/RESCUE/ESCALATE 결정은 `call-codex-cli(lstack:judge)` 에 위임**.
       Orchestrator는 dispatcher 역할만 — 자기가 verdict 정하지 않는다 (advocacy bias 회피)
     - 완료 시 결과 기록: 결과 요약 1-2줄 + 선택적 **의사결정**/\*\*남은 리스크\*\* + AC 체크.
       프로세스(검증 방법, 코드 리뷰 로그, 복잡성 정리)는 plan.md에 적지 않는다.
     - Failed tasks get max 3 ralph-loop retries with prior failure evidence included
     - **3rd ralph 실패 시 codex:codex-rescue 폴백 1회** (사용자 에스컬레이션 직전 안전망)
     - Code review Critical/Important issues land in `## 향후 과제`
-    - **Code review 복잡성 신호 시 codex-architect (review mode) 자동 fan-out** — 동작 보존 전제 리팩터, 회귀 시 자동 revert
+    - **Code review 복잡성 신호 시 `call-codex-cli(lstack:principal-engineer)` (review mode) 자동 fan-out** — 동작 보존 전제 리팩터, 회귀 시 자동 revert
     - **Per-task fan-out에 Codex adversarial-review 추가** (LOC > 50 게이트, fail-soft)
     - Codex 호출 실패는 워크플로우를 차단하지 않는다 (best-effort 2nd opinion)
   </Success_Criteria>
@@ -164,12 +164,15 @@ model: inherit
 
     Track per-task completion of: implementation done, every AC verified, code review done
     (FF + Codex adversarial if gated). When all returned, **package evidence into a JSON and
-    dispatch the judge** — orchestrator does NOT decide PASS/RALPH/RESCUE/ESCALATE itself.
+    dispatch the judge via `call-codex-cli(lstack:judge)`** — orchestrator does NOT decide
+    PASS/RALPH/RESCUE/ESCALATE itself.
 
     ```
-    Agent({
-      subagent_type: "lstack:codex-judge",
-      prompt: <evidence JSON>
+    Skill({
+      skill: "lstack:call-codex-cli",
+      args:
+        prompt_file: lstack:judge
+        context: <evidence JSON 아래 shape 그대로>
     })
     ```
 
@@ -186,8 +189,9 @@ model: inherit
     }
     ```
 
-    `codex-judge` 가 내부적으로 Codex 시도 → 실패 시 자동 `lstack:judge` 로 fallback.
-    어느 쪽이든 동일 schema 의 JSON verdict 반환. 호출자(orchestrator)는 verdict 만 보고 행동:
+    Codex가 judge 프롬프트로 평가 → 동일 schema의 JSON verdict 반환. Codex 미설치/실패 시 hard fail →
+    에러를 PM(메인 컨텍스트)에 그대로 보고.
+    호출자(orchestrator)는 verdict만 보고 행동:
 
     - `decision: "PASS"` →
         1) 태스크 헤더 suffix를 `— 진행중` → `— 완료 \`sha\`` 로 변경.
@@ -224,25 +228,33 @@ model: inherit
     - 프로세스(검증 방법, 코드 리뷰 로그, 복잡성 정리)는 **적지 않는다**.
     - 대기 때 적은 수정/신규 파일 리스트를 결과에 반복하지 않는다.
 
-    ## Step 3.5: codex-architect review fan-out (복잡성 신호 시)
+    ## Step 3.5: principal-engineer review fan-out (복잡성 신호 시)
 
     Code review가 복잡성 신호를 보고했을 때만 진입. ralph-loop 와는 별도 — 동작 보존
     리팩터 시도이지 실패 재시도가 아니다.
 
+    `call-codex-cli(lstack:principal-engineer)` 호출. background 실행을 위해
+    general-purpose 서브에이전트가 skill을 invoke 하는 방식:
+
     ```
     Agent({
-      subagent_type: "lstack:codex-architect",
+      subagent_type: "general-purpose",
       run_in_background: true,
       prompt:
-        - "mode: review"
-        - 대상 task id + 파일 목록 + 코드 리뷰가 보고한 복잡성 신호(file:line + 신호명 + 임계 초과치)
-        - 해당 task의 ACs (재검증용)
-        - 해당 task의 commit SHA(s)
-        - "동작 보존 전제로 패턴 카탈로그를 적용해 신호를 줄여라. REVIEW_REPORT 를 반환."
+        - "Invoke skill `lstack:call-codex-cli` with:"
+        - "  prompt_file: lstack:principal-engineer"
+        - "  write: true (리팩터 commit 필요)"
+        - "  context:"
+        - "    mode: review"
+        - "    대상 task id + 파일 목록 + 복잡성 신호(file:line + 신호명 + 임계 초과치)"
+        - "    해당 task의 ACs (재검증용)"
+        - "    해당 task의 commit SHA(s)"
+        - "    \"동작 보존 전제로 패턴 카탈로그를 적용해 신호를 줄이고 REVIEW_REPORT 반환.\""
+        - "Skill stdout을 verbatim 반환."
     })
     ```
 
-    codex-architect (review mode) 결과 처리:
+    principal-engineer (review mode) 결과 처리:
     - **Behavior preserved + signals reduced** → 변경 commit 그대로 둠. task 통과.
     - **Behavior regression (AC 실패)** → 자체 revert. 미해결 신호는 향후 과제에
       기록. task 통과 (review가 차단하지 않는 한).

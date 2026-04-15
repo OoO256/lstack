@@ -111,7 +111,7 @@ bcrypt + jsonwebtoken으로 구현. auth 에러 별도 처리 추가.
 |------|----------|------|
 | `# <goal>` + `## 배경` | PM (lstack skill) | Phase 1 후 |
 | `## AS-IS → TO-BE` (선택) | architect / PM | Phase 2.2-2.3 또는 Phase 1 |
-| `## 설계` | architect / codex-architect | Phase 2.2-2.3 |
+| `## 설계` | call-codex-cli(lstack:principal-engineer) | Phase 2.2-2.3 |
 | `## 태스크` — `### Tn` skeleton | planner | Phase 2.4 |
 | `## 태스크` — AC 추가 | test-planner | Phase 2.5 |
 | `## 태스크` — 상태 전이 + 결과 기록 | orchestrator | Phase 3+4 |
