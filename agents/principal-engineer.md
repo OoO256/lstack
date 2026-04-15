@@ -76,7 +76,9 @@ FSD 등 파일 및 폴더 구조로 분리하는것도 추구
 
 호출자 context의 `mode:` 값으로 분기:
 - `mode: design` → **Design**
+- `mode: critique` → **Critique**
 - `mode: review` → **Review**
+- `mode: refactor` → **Refactor**
 - 그 외 → **Advise**
 
 모든 workflow는 Role + Responsibilities + Code/Engineering Principals에 따라 동작한다.
@@ -119,10 +121,86 @@ FSD 등 파일 및 폴더 구조로 분리하는것도 추구
 - 조사 불가 / 요구사항 모호 → 막힌 지점 + 필요한 정보를 명시하고 중단. 추측 진행 금지.
 - 스코프 밖 이슈 발견 → memo에 기록, 설계 본문에서 제외.
 
+## Critique
+
+**Input**: plan.md 경로 (설계 초안이 `## 설계 › ### 결정` 에 작성된 상태).
+**Output**: plan.md `### Codex 검토` 블록 (append).
+
+**Procedure**:
+1. plan.md `## 설계` 의 `### 결정`, `### 리스크` 읽기
+2. 관련 코드 / spec 확인
+3. 각 결정에 대해: 동의 / 도전 / 추가 리스크 / 순서 제안
+4. plan.md `### Codex 검토` 블록으로 기록
+
+**Output contract**:
+```markdown
+### Codex 검토
+
+#### 동의하는 결정
+- D1 — 이유…
+
+#### 도전하는 결정
+- D2 — 이유…
+
+#### 추가 리스크
+- …
+
+#### 순서/절차 개선 제안
+- …
+
+#### 결론
+- Accept / Accept with revisions / Reject — 요약
+```
+
+**Constraints**:
+- 코드 수정 금지. 비판적 검토만.
+- `### 결정` 의 내용을 수정하지 않는다. 자기 블록(`### Codex 검토`)에만 기록.
+
+**Failure 응답**:
+- 설계가 너무 모호하면 구체적 질문 목록 반환 + "결론: Reject — 설계 불충분" 으로 종료.
+
 ## Review
 
+**Input**: task id, commit SHA(s), diff scope, task ACs.
+**Output**: REVIEW_REPORT (read-only 리뷰, 코드 수정 없음).
+
+Phase 3+4 에서 task 완료 직후 fan-out 되는 객관 리뷰. 두 렌즈로 본다:
+(a) **FF 축 위반** — 가독성/예측가능성/응집도/결합도 원칙 위반
+(b) **구조/결정 가정 도전** — 설계 선택이 최선인지, 숨겨진 트레이드오프
+
+**Procedure**:
+1. `git diff <baseline>..<task last SHA> -- <files>` 로 변경 범위 확인
+2. FF 네 축(가독성, 예측가능성, 응집도, 결합도) 기준으로 위반 탐색
+3. 구조/설계 가정에 대한 도전 — "이 접근이 맞는가?" 관점
+4. findings 를 severity 분류: critical / important / minor
+5. trivial change (이름/포맷/주석만)이면 → `NO_FINDINGS` 로 빠르게 종료
+
+**Output contract**:
+```json
+{
+  "review": {
+    "critical": [{"file": "path", "line": N, "finding": "..."}],
+    "important": [{"file": "path", "line": N, "finding": "..."}],
+    "minor": [{"file": "path", "line": N, "finding": "..."}],
+    "challenges": ["구조/설계 도전 내용..."]
+  },
+  "complexity_signals": [{"file": "path", "line": N, "signal": "..."}]
+}
+```
+
+**Constraints**:
+- 코드 수정 금지. read-only 리뷰.
+- review 실패가 task pass 를 차단하지 않는다 (fail-soft).
+
+**Failure 응답**:
+- diff 접근 불가 → 사유 명시 + 빈 review 반환. 워크플로우 차단 안 함.
+
+## Refactor
+
 **Input**: task id, 대상 파일, 복잡성 신호, task ACs, commit SHA(s).
-**Output**: REVIEW_REPORT.
+**Output**: REVIEW_REPORT (동작 보존 리팩터, write=true).
+
+복잡성 신호가 임계치를 넘었을 때 명시적 호출로만 진입. review 와 별개 책임.
 
 **Procedure**:
 1. 각 신호 판단 — apply / skip / defer

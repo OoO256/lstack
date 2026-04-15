@@ -44,9 +44,13 @@ Max 3 ralph attempts. 초과 시 RESCUE(1회) → ESCALATE.
 {
   "task_id": "T2",
   "ac_results": [{"ac": "...", "pass": true|false, "evidence": "..."}],
-  "ff_review": {"critical": [...], "important": [...], "minor": [...]},
-  "codex_review": {"critical": [...], "important": [...], "minor": [...], "challenges": [...]} | null,
-  "complexity_signals": [...],
+  "review": {
+    "critical": [{"file": "...", "line": N, "finding": "..."}],
+    "important": [{"file": "...", "line": N, "finding": "..."}],
+    "minor": [{"file": "...", "line": N, "finding": "..."}],
+    "challenges": ["구조/설계 도전 내용..."]
+  },
+  "complexity_signals": [{"file": "...", "line": N, "signal": "..."}],
   "ralph_attempts": 0..3,
   "codex_rescue_attempted": true|false
 }
@@ -58,12 +62,12 @@ Max 3 ralph attempts. 초과 시 RESCUE(1회) → ESCALATE.
 |------|------|
 | `ralph_attempts ≥ 3` AND `codex_rescue_attempted = true` | **ESCALATE** (다 해봤음) |
 | `ralph_attempts ≥ 3` AND `codex_rescue_attempted = false` | **RESCUE** (Codex Rescue 1회 시도) |
-| 모든 `ac_results.pass = true` AND `ff_review.critical = []` AND `codex_review.critical = []` | **PASS** |
+| 모든 `ac_results.pass = true` AND `review.critical = []` | **PASS** |
 | 그 외 (AC 실패 또는 critical 발견) | **RALPH** (재시도 with 누적 evidence) |
 
 **부가 처리:**
-- PASS 시 `important` findings → `carried_findings` (orchestrator가 ## 향후 과제 적재)
-- PASS 시 codex `challenges` → `carried_challenges` (orchestrator가 ## 향후 과제 적재)
+- PASS 시 `review.important` findings → `carried_findings` (orchestrator가 ## 향후 과제 적재)
+- PASS 시 `review.challenges` → `carried_challenges` (orchestrator가 ## 향후 과제 적재)
 - PASS 시 `complexity_signals`가 비어있지 않으면 → `review_needed: true` (orchestrator Step 3.5 라우팅)
 - RALPH 시 누적 critical evidence → `retry_payload`로 반환
 - RESCUE 시 누적 evidence → `rescue_payload`로 반환

@@ -46,9 +46,9 @@ model: inherit
     - Failed tasks get max 3 ralph-loop retries with prior failure evidence included
     - **3rd ralph 실패 시 codex:codex-rescue 폴백 1회** (사용자 에스컬레이션 직전 안전망)
     - Code review Critical/Important issues land in `## 향후 과제`
-    - **Code review 복잡성 신호 시 `call-codex-cli(lstack:principal-engineer)` (review mode) 자동 fan-out** — 동작 보존 전제 리팩터, 회귀 시 자동 revert
-    - **Per-task fan-out에 Codex adversarial-review 추가** (LOC > 50 게이트, fail-soft)
-    - Codex 호출 실패는 워크플로우를 차단하지 않는다 (best-effort 2nd opinion)
+    - **Code review 복잡성 신호 시 `call-codex-cli(lstack:principal-engineer)` (refactor mode) 자동 fan-out** — 동작 보존 전제 리팩터, 회귀 시 자동 revert
+    - **Per-task fan-out에 `call-codex-cli(lstack:principal-engineer) mode: review` 단일 호출** (FF 축 + adversarial 관점 통합, fail-soft)
+    - Codex review 실패는 워크플로우를 차단하지 않는다 (fail-soft)
   </Success_Criteria>
 
   <Constraints>
@@ -126,45 +126,34 @@ model: inherit
        })
        ```
 
-    2. **Code review** (always, one per task):
+    2. **Code review** (always, one per task — `call-codex-cli(lstack:principal-engineer) mode: review`):
        ```
        Agent({
          subagent_type: "general-purpose",
          run_in_background: true,
          prompt:
-           - "Use the `frontend-fundamentals:review` skill to review the diff for task <Tn>."
-           - "Diff scope: commits <Tn's SHA(s)> (or `git diff <baseline>..<Tn last SHA> -- <files>`)."
-           - "Report: pass/fail, plus Critical/Important/Minor findings with file:line evidence."
+           - "Invoke skill `lstack:call-codex-cli` with:"
+           - "  prompt_file: lstack:principal-engineer"
+           - "  context:"
+           - "    mode: review"
+           - "    task_id: <Tn>"
+           - "    commit_shas: <Tn's SHA(s)>"
+           - "    diff_scope: `git diff <baseline>..<Tn last SHA> -- <files>`"
+           - "    task_acs: <Tn's ACs>"
+           - "Report: review JSON (critical/important/minor/challenges + complexity_signals)."
+           - "If Codex unavailable, return empty review + log warning (fail-soft)."
        })
        ```
-
-    3. **Codex adversarial review** (gated — only when task changed > 50 LOC OR review surface
-       is non-trivial. Skip for tiny tasks to avoid noise):
-       ```
-       Agent({
-         subagent_type: "general-purpose",
-         run_in_background: true,
-         prompt:
-           - "Run codex adversarial-review on commits <Tn's SHA(s)>."
-           - "Bash:
-              CODEX_SCRIPT=$(ls ~/.claude/plugins/marketplaces/openai-codex/plugins/codex/scripts/codex-companion.mjs 2>/dev/null \
-                || find ~/.claude/plugins -path '*openai-codex*codex/scripts/codex-companion.mjs' 2>/dev/null | head -1)
-              node \"$CODEX_SCRIPT\" adversarial-review --wait --base <baseline SHA> \
-                'Challenge: is this implementation the right approach for <task action>?
-                 Question assumptions, design choices, tradeoffs.'"
-           - "Return Codex output verbatim. If Codex unavailable, return empty + log warning."
-       })
-       ```
-       Codex 호출 실패는 task pass를 막지 않는다 (best-effort 2nd opinion).
+       Review 실패는 task pass를 막지 않는다 (fail-soft).
 
     Do NOT block. Immediately after fan-out, check whether the next wave's dependencies are
     satisfied and dispatch its tasks per Step 1. Pipeline keeps moving.
 
     ## Step 3: Aggregate evidence + Judge dispatch
 
-    Track per-task completion of: implementation done, every AC verified, code review done
-    (FF + Codex adversarial if gated). When all returned, **package evidence into a JSON and
-    dispatch the judge via `call-codex-cli(lstack:judge)`** — orchestrator does NOT decide
+    Track per-task completion of: implementation done, every AC verified, code review done.
+    When all returned, **package evidence into a JSON and dispatch the judge via
+    `call-codex-cli(lstack:judge)`** — orchestrator does NOT decide
     PASS/RALPH/RESCUE/ESCALATE itself.
 
     ```
@@ -181,9 +170,13 @@ model: inherit
     {
       "task_id": "Tn",
       "ac_results": [{"ac": "...", "pass": bool, "evidence": "..."}, ...],
-      "ff_review": {"critical": [...], "important": [...], "minor": [...]},
-      "codex_review": {"critical": [...], "important": [...], "minor": [...], "challenges": [...]} | null,
-      "complexity_signals": [...],
+      "review": {
+        "critical": [{"file": "...", "line": N, "finding": "..."}],
+        "important": [{"file": "...", "line": N, "finding": "..."}],
+        "minor": [{"file": "...", "line": N, "finding": "..."}],
+        "challenges": ["..."]
+      },
+      "complexity_signals": [{"file": "...", "line": N, "signal": "..."}],
       "ralph_attempts": <int>,
       "codex_rescue_attempted": bool
     }
@@ -228,12 +221,12 @@ model: inherit
     - 프로세스(검증 방법, 코드 리뷰 로그, 복잡성 정리)는 **적지 않는다**.
     - 대기 때 적은 수정/신규 파일 리스트를 결과에 반복하지 않는다.
 
-    ## Step 3.5: principal-engineer review fan-out (복잡성 신호 시)
+    ## Step 3.5: principal-engineer refactor fan-out (복잡성 신호 시)
 
     Code review가 복잡성 신호를 보고했을 때만 진입. ralph-loop 와는 별도 — 동작 보존
     리팩터 시도이지 실패 재시도가 아니다.
 
-    `call-codex-cli(lstack:principal-engineer)` 호출. background 실행을 위해
+    `call-codex-cli(lstack:principal-engineer) mode: refactor` 호출. background 실행을 위해
     general-purpose 서브에이전트가 skill을 invoke 하는 방식:
 
     ```
@@ -245,7 +238,7 @@ model: inherit
         - "  prompt_file: lstack:principal-engineer"
         - "  write: true (리팩터 commit 필요)"
         - "  context:"
-        - "    mode: review"
+        - "    mode: refactor"
         - "    대상 task id + 파일 목록 + 복잡성 신호(file:line + 신호명 + 임계 초과치)"
         - "    해당 task의 ACs (재검증용)"
         - "    해당 task의 commit SHA(s)"
@@ -254,7 +247,7 @@ model: inherit
     })
     ```
 
-    principal-engineer (review mode) 결과 처리:
+    principal-engineer (refactor mode) 결과 처리:
     - **Behavior preserved + signals reduced** → 변경 commit 그대로 둠. task 통과.
     - **Behavior regression (AC 실패)** → 자체 revert. 미해결 신호는 향후 과제에
       기록. task 통과 (review가 차단하지 않는 한).
