@@ -47,27 +47,23 @@ lstack/
 
 ## Agents
 
-### 내부 Agent (invokable subagents)
+### 내부 Agent (모두 dual-invocable — Claude subagent + Codex 프롬프트 양쪽 호출 가능)
 
 | Agent | 경로 | Phase | 역할 |
 |-------|------|-------|------|
-| test-planner | `agents/test-planner.md` | Design 2.4 | 최소 테스트 시나리오 설계. 코드 작성 안 함 |
-| planner | `agents/planner.md` | Design 2.5 | tasks.json 작성. agent pool 참조 |
-| orchestrator | `agents/orchestrator.md` | Execute+Verify+Review | wave 단위 백그라운드 병렬 task dispatch + 완료 즉시 verify ACs ∥ FF code review ∥ Codex adversarial(LOC>50) fan-out. **결정은 `call-codex-cli(lstack:judge)`에 위임** (advocacy bias 회피) |
+| principal-engineer | `agents/principal-engineer.md` | Phase 2.1 설계, Phase 2.2 critique, Phase 3+4 task diff review, 복잡성 refactor, `/ask-cto` | 객관적 설계 판단 · task diff 리뷰 · 복잡성 리팩터 · 독립적 기술 자문 |
+| judge | `agents/judge.md` | Phase 3+4 verdict 결정 | evidence + rule table 기반 PASS/RALPH/RESCUE/ESCALATE 판정 |
+| planner | `agents/planner.md` | Design 2.4 | plan.md `### Tn` skeleton 작성 (exec agent + 구현 힌트) |
+| test-planner | `agents/test-planner.md` | Design 2.5 | 각 태스크 블록 끝에 AC 체크박스 추가. 테스트 코드는 쓰지 않는다 |
+| orchestrator | `agents/orchestrator.md` | Execute+Verify+Review | wave 단위 백그라운드 병렬 task dispatch + 완료 즉시 verify ACs ∥ `call-codex-cli(lstack:principal-engineer) mode:review` fan-out. **결정은 `call-codex-cli(lstack:judge)`에 위임** (advocacy bias 회피) |
 | harness-sage | `agents/harness-sage.md` | Compound | worktree 격리 후 코드 구현 + issue/PR 생성 |
 
-### Persona source files (NOT invokable subagents)
+**Dual-invocable 원칙:**
+- 모든 agent 파일에 frontmatter (`name`/`description`/`model`) 존재 → `Agent({subagent_type: "..."})` 로 Claude subagent 호출 가능.
+- `call-codex-cli` skill 이 frontmatter 블록을 제거한 본문만 Codex 에 주입 → `call-codex-cli(<plugin>:<name>)` 표기로 Codex 호출.
+- 같은 persona 를 두 모델로 양쪽에서 활용 (Phase 2 이중 검토 등).
 
-`agents/` 디렉토리에는 invokable subagent 외에 **프롬프트 파일**도 포함된다.
-Frontmatter가 없어 subagent로 등록되지 않고, `call-codex-cli(<plugin>:<name>)` 표기로
-Codex 컨텍스트에 주입되어 동작한다.
-
-| 프롬프트 | 경로 | 주입되는 시점 | 역할 |
-|---------|------|--------------|------|
-| principal-engineer | `agents/principal-engineer.md` | Phase 2.1-2.3 설계, Phase 3.5 복잡성 리뷰, `/ask-cto` | 객관적 설계 판단 · 복잡성 패턴 리팩터 · 독립적 기술 자문 |
-| judge | `agents/judge.md` | Phase 3+4 verdict 결정 | evidence + rule table 기반 PASS/RALPH/RESCUE/ESCALATE 판정 |
-
-**레이어 분리 원칙:**
+**레이어 분리:**
 - `call-codex-cli` (skill) = Codex 호출 mechanics (프롬프트 내용 알지 않음)
 - `agents/<name>.md` = 프롬프트 파일 (호출 방식 알지 않음)
 - 호출자 = 두 레이어를 조합 — `call-codex-cli(<plugin>:<name>)` 표기로 참조
@@ -97,29 +93,25 @@ Codex 컨텍스트에 주입되어 동작한다.
 | 보안 감사 | `oh-my-claudecode:security-reviewer` | OWASP Top 10. opus |
 | 보안 감사 (심층) | `gstack:cso` | STRIDE, supply chain, CI/CD |
 
-**Code Review Skill** — orchestrator가 task별로 자동 호출 (Skill, agent 아님):
+**Codex Integration Pool** — 다른 모델(GPT-5 Codex)의 독립 시각. 모든 호출은
+`call-codex-cli(<plugin>:<name>)` 표기로 통일:
 
-| 용도 | Skill | 비고 |
-|------|-------|------|
-| 프론트엔드 품질 | `frontend-fundamentals:review` | 가독성/예측가능성/응집도/결합도 원칙. task별 commit diff 기반 |
+| 시점 | 호출 | 권한 | 용도 |
+|------|------|------|------|
+| Phase 2.1 설계 | `call-codex-cli(lstack:principal-engineer)` mode: design | write | Codex 가 로컬 코드 직접 읽어 plan.md `## 설계` 작성 |
+| Phase 2.2 critique | `call-codex-cli(lstack:principal-engineer)` mode: critique | write | Claude-작성 설계를 Codex 가 비판적 검토 → `### Codex 검토` append |
+| Phase 3+4 task diff review | `call-codex-cli(lstack:principal-engineer)` mode: review | read-only (fail-soft) | task commit diff 에 대한 객관 리뷰 (FF + adversarial 관점 통합) |
+| Phase 3+4 복잡성 refactor | `call-codex-cli(lstack:principal-engineer)` mode: refactor | write | review 가 복잡성 신호 보고 시 동작 보존 리팩터 |
+| Phase 3+4 verdict | `call-codex-cli(lstack:judge)` | read-only | evidence 기반 PASS/RALPH/RESCUE/ESCALATE 판정 |
+| Ralph-loop 3회 실패 후 | `codex:codex-rescue --write` | write | 다른 모델의 마지막 시도 (외부 agent) |
 
-**Codex Integration Pool** — 다른 모델(GPT-5 Codex)의 독립 시각. 모두 fail-soft (미설치/실패 시
-자동으로 Claude fallback 호출 → 워크플로우 차단 안 함):
+**호출 패턴** (`call-codex-cli`):
+1. Codex availability 체크 (script 존재 + 호출 성공).
+2. AVAILABLE → `agents/<name>.md` 의 frontmatter 블록 제거 후 본문만 + 호출자 context 를 Codex 에 주입, stdout verbatim 반환.
+3. UNAVAILABLE → hard fail. 에러를 메인 컨텍스트에 보고 (판단/조치는 메인 컨텍스트가 결정).
+4. Claude fallback 없음 — Codex가 워크플로우의 전제.
 
-| 시점 | 호출 방식 | Fallback | 용도 |
-|------|-----------|----------|------|
-| Phase 2.1-2.3 조사+설계 | `call-codex-cli(lstack:principal-engineer)` | 없음 (hard fail) | Codex가 로컬 코드 직접 읽어 조사 + 설계. plan.md 에 직접 쓰기 (`write=true`) |
-| 각 task 완료 후 fan-out (LOC > 50 게이트) | Bash → `codex-companion adversarial-review --wait` | 없음 (skip with warning) | 변경 부분에 대한 2nd opinion. FF review와 평행 |
-| Verify 후 PASS/RALPH/RESCUE/ESCALATE 결정 | `call-codex-cli(lstack:judge)` | 없음 (hard fail) | 판정 perspective에 다른 모델. orchestrator dispatcher와 분리 (advocacy bias 회피) |
-| Ralph-loop 3회 실패 후 사용자 에스컬레이션 직전 | Agent: `codex:codex-rescue --write` | 없음 (바로 에스컬레이션) | 다른 모델의 마지막 시도. 통과 시 정상 완료 |
-
-**호출 패턴** — Codex 의존 지점은 모두 `call-codex-cli(<plugin>:<prompt>)` 표기로 통일:
-1. Skill `lstack:call-codex-cli`이 Codex availability 체크 (script 존재 + 호출 성공)
-2. AVAILABLE → `agents/<prompt>.md` + 호출자 context를 Codex에 주입, stdout verbatim 반환
-3. UNAVAILABLE → hard fail. 에러를 메인 컨텍스트에 보고 (판단/조치는 메인 컨텍스트가 결정)
-4. Claude fallback 없음 — Codex가 워크플로우의 전제
-
-Adversarial-review(LOC>50) 만 예외적으로 fail-soft (skip with warning) — task pass 게이트가 아닌 best-effort 2nd opinion이기 때문.
+예외: Phase 3+4 task diff review 는 fail-soft (review 실패가 task pass 를 차단하지 않음).
 
 **Design Pool** — Phase 2에서 추가 활용 가능:
 
