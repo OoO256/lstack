@@ -76,9 +76,24 @@ esac
 [ -f "$PROMPT_PATH" ] || { echo "ERROR: prompt file not found: $PROMPT_PATH"; exit 1; }
 ```
 
+### Step 2.5: Frontmatter strip
+
+프롬프트 파일이 YAML frontmatter (`---` 로 시작하는 블록) 를 가지고 있으면,
+첫 번째 `---` 블록만 제거하고 본문만 Codex 에 전달한다.
+frontmatter 는 Claude runtime 용 메타데이터이므로 Codex 에 보내면 토큰 낭비 + 지시 오해.
+
+**규약**: 파일 1행이 `---` 로 시작할 때만 strip. 그 외에는 원본 그대로.
+
+```bash
+PROMPT_BODY=$(awk 'BEGIN{in_fm=0; done=0} NR==1 && /^---$/ {in_fm=1; next} in_fm && /^---$/ && !done {in_fm=0; done=1; next} !in_fm {print}' "$PROMPT_PATH")
+```
+
+결과: `PROMPT_BODY` 에 frontmatter 제외한 본문만 담긴다.
+frontmatter 가 없는 파일이면 전체 내용이 그대로 `PROMPT_BODY` 에 담긴다.
+
 ### Step 3: Codex 호출
 
-프롬프트 파일 내용 + `---` 구분자 + 호출자 context 를 합쳐 전달:
+프롬프트 본문(frontmatter 제거 후) + `---` 구분자 + 호출자 context 를 합쳐 전달:
 
 ```bash
 FLAGS=""
@@ -86,7 +101,7 @@ FLAGS=""
 [ -n "$model" ]       && FLAGS="$FLAGS --model $model"
 [ -n "$effort" ]      && FLAGS="$FLAGS --effort $effort"
 
-node "$CODEX_SCRIPT" task --wait $FLAGS "$(printf '%s\n\n---\n\n## 요청\n%s\n' "$(cat "$PROMPT_PATH")" "$context")"
+node "$CODEX_SCRIPT" task --wait $FLAGS "$(printf '%s\n\n---\n\n## 요청\n%s\n' "$PROMPT_BODY" "$context")"
 ```
 
 ### Step 4: stdout 반환
