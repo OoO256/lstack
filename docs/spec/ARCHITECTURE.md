@@ -21,13 +21,14 @@ lstack/
 
 ## Skills
 
-### lstack (PM 진입점, start 스킬 대체)
+### lstack (PM 진입점 + 오케스트레이터, start 스킬 대체)
 - **경로**: `skills/lstack/SKILL.md`
 - **트리거**: `/lstack`, `/start`, "시작", "이어서", "계속", "resume", "이거 만들어", "이거 고쳐"
-- **역할**: 단일 진입점. **Phase 0에서 worklog 스캔 + plan.md 섹션 상태로 현재 phase 자동 추론**,
-  새 작업 / 이어서 작업을 판별 후 알맞은 phase agent를 dispatch.
+- **역할**: 단일 진입점 **겸 오케스트레이터**. 메인 컨텍스트가 직접 PM 역할을 수행하며
+  전문 agent 들을 Agent 호출로 dispatch 한다 (subagent 는 Agent 호출 불가하므로
+  orchestrator 를 subagent 로 띄우지 않는다).
 - **워크플로우**: [State Detect] → Interview → Design (`call-as-codex(lstack:principal-engineer)` → planner → test-designer) →
-  사용자 승인 → Execute+Verify+Review (orchestrator, pipelined,
+  사용자 승인 → Execute+Verify+Review (메인 컨텍스트가 pipelined 오케스트레이션,
   per-task FF + Codex adversarial fan-out, 복잡성 시 `call-as-codex(lstack:principal-engineer)` review, 3회 ralph 실패 시
   Codex Rescue 폴백) → Spec 업데이트 → Compound
 - **원칙**: `docs/spec/PRINCIPLE.md` 참조
@@ -55,7 +56,7 @@ lstack/
 | judge | `agents/judge.md` | Phase 3+4 verdict 결정 | evidence + rule table 기반 PASS/RALPH/RESCUE/ESCALATE 판정 |
 | planner | `agents/planner.md` | Design 2.4 | plan.md `### Tn` skeleton 작성 (exec agent + 구현 힌트) |
 | test-designer | `agents/test-designer.md` | Design 2.5 | 각 태스크 블록 끝에 AC 체크박스 추가. 테스트 코드는 쓰지 않는다 |
-| orchestrator | `agents/orchestrator.md` | Execute+Verify+Review | wave 단위 백그라운드 병렬 task dispatch + 완료 즉시 verify ACs ∥ `call-as-codex(lstack:principal-engineer) mode:review` fan-out. **결정은 `call-as-codex(lstack:judge)`에 위임** (advocacy bias 회피) |
+| ~~orchestrator~~ | 삭제됨 → `skills/lstack/SKILL.md` 로 통합 | Phase 0-6 | 메인 컨텍스트가 직접 오케스트레이션 (subagent 는 Agent 호출 불가). PM persona + 상세 규칙은 skill 에 내장 |
 | harness-sage | `agents/harness-sage.md` | Compound | worktree 격리 후 코드 구현 + issue/PR 생성 |
 
 **Dual-invocable 원칙:**
@@ -138,19 +139,23 @@ lstack/
 
 ## PM Orchestration Flow
 
+**메인 컨텍스트가 직접 오케스트레이션한다.** subagent 는 Agent 호출이 불가하므로
+orchestrator 를 subagent 로 띄우지 않는다. lstack skill 이 로드되면 메인 컨텍스트가
+PM 역할을 수행하며 전문 agent 들을 직접 Agent 호출로 dispatch 한다.
+
 ```
 사용자 요청
     │
     ▼
-lstack Skill (PM 진입점)
+lstack Skill → 메인 컨텍스트가 PM 역할 직접 수행 (오케스트레이션 로직 skill 에 내장)
     │  Phase 0: State Detect ── worklog 스캔 + plan.md 섹션 분석 → 새 작업/resume 판별
-    │  Phase 1: Interview ─── hoyeon:interviewer
+    │  Phase 1: Interview ─── Agent({subagent_type: "hoyeon:interviewer"})
     │  Phase 2: Design
     │     2.1-2.3 call-as-codex(lstack:principal-engineer) ── Codex가 직접 코드 읽고 조사 + 설계
-    │     2.4 planner ──────── ## 태스크 › ### Tn: (skeleton — action + exec + 힌트 1-3줄)
-    │     2.5 test-designer ─── 각 태스크 밑에 AC 추가 → 사용자 승인
-    │  Phase 3+4: Execute+Verify+Review (pipelined)
-    │     orchestrator ─────── wave 단위 백그라운드 병렬 dispatch
+    │     2.4 Agent({subagent_type: "lstack:planner"}) ── ## 태스크 › ### Tn: skeleton
+    │     2.5 Agent({subagent_type: "lstack:test-designer"}) ── 각 태스크 밑에 AC 추가 → 사용자 승인
+    │  Phase 3+4: Execute+Verify+Review (pipelined, 메인 컨텍스트가 직접 오케스트레이션)
+    │     wave 단위 Agent({run_in_background: true}) 병렬 dispatch
     │       └─ 각 task 완료 → verify ACs ∥ FF review ∥ Codex adversarial(LOC>50) fan-out
     │       └─ evidence 패키지 → call-as-codex(lstack:judge)
     │           → PASS / RALPH / RESCUE / ESCALATE 결정
@@ -159,7 +164,7 @@ lstack Skill (PM 진입점)
     │  Phase 5: Spec 업데이트 ── docs/spec/ SSOT 반영
     │  Phase 6: Compound ───── /compound (하니스 문제 시)
 
-orchestrator pipeline 구조 (wave N에서 task가 끝나는 순간 wave N+1 dispatch와
+pipeline 구조 (wave N에서 task가 끝나는 순간 wave N+1 dispatch와
 verify+review fan-out이 동시에 진행 — 어느 task도 sibling을 기다리지 않음):
 
 ```
