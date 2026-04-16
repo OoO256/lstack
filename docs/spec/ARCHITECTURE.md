@@ -26,9 +26,9 @@ lstack/
 - **트리거**: `/lstack`, `/start`, "시작", "이어서", "계속", "resume", "이거 만들어", "이거 고쳐"
 - **역할**: 단일 진입점. **Phase 0에서 worklog 스캔 + plan.md 섹션 상태로 현재 phase 자동 추론**,
   새 작업 / 이어서 작업을 판별 후 알맞은 phase agent를 dispatch.
-- **워크플로우**: [State Detect] → Interview → Design (`call-codex-cli(lstack:principal-engineer)` → planner → test-planner) →
+- **워크플로우**: [State Detect] → Interview → Design (`call-as-codex(lstack:principal-engineer)` → planner → test-designer) →
   사용자 승인 → Execute+Verify+Review (orchestrator, pipelined,
-  per-task FF + Codex adversarial fan-out, 복잡성 시 `call-codex-cli(lstack:principal-engineer)` review, 3회 ralph 실패 시
+  per-task FF + Codex adversarial fan-out, 복잡성 시 `call-as-codex(lstack:principal-engineer)` review, 3회 ralph 실패 시
   Codex Rescue 폴백) → Spec 업데이트 → Compound
 - **원칙**: `docs/spec/PRINCIPLE.md` 참조
 
@@ -54,19 +54,19 @@ lstack/
 | principal-engineer | `agents/principal-engineer.md` | Phase 2.1 설계, Phase 2.2 critique, Phase 3+4 task diff review, 복잡성 refactor, `/ask-cto` | 객관적 설계 판단 · task diff 리뷰 · 복잡성 리팩터 · 독립적 기술 자문 |
 | judge | `agents/judge.md` | Phase 3+4 verdict 결정 | evidence + rule table 기반 PASS/RALPH/RESCUE/ESCALATE 판정 |
 | planner | `agents/planner.md` | Design 2.4 | plan.md `### Tn` skeleton 작성 (exec agent + 구현 힌트) |
-| test-planner | `agents/test-planner.md` | Design 2.5 | 각 태스크 블록 끝에 AC 체크박스 추가. 테스트 코드는 쓰지 않는다 |
-| orchestrator | `agents/orchestrator.md` | Execute+Verify+Review | wave 단위 백그라운드 병렬 task dispatch + 완료 즉시 verify ACs ∥ `call-codex-cli(lstack:principal-engineer) mode:review` fan-out. **결정은 `call-codex-cli(lstack:judge)`에 위임** (advocacy bias 회피) |
+| test-designer | `agents/test-designer.md` | Design 2.5 | 각 태스크 블록 끝에 AC 체크박스 추가. 테스트 코드는 쓰지 않는다 |
+| orchestrator | `agents/orchestrator.md` | Execute+Verify+Review | wave 단위 백그라운드 병렬 task dispatch + 완료 즉시 verify ACs ∥ `call-as-codex(lstack:principal-engineer) mode:review` fan-out. **결정은 `call-as-codex(lstack:judge)`에 위임** (advocacy bias 회피) |
 | harness-sage | `agents/harness-sage.md` | Compound | worktree 격리 후 코드 구현 + issue/PR 생성 |
 
 **Dual-invocable 원칙:**
 - 모든 agent 파일에 frontmatter (`name`/`description`/`model`) 존재 → `Agent({subagent_type: "..."})` 로 Claude subagent 호출 가능.
-- `call-codex-cli` skill 이 frontmatter 블록을 제거한 본문만 Codex 에 주입 → `call-codex-cli(<plugin>:<name>)` 표기로 Codex 호출.
+- `call-as-codex` skill 이 frontmatter 블록을 제거한 본문만 Codex 에 주입 → `call-as-codex(<plugin>:<name>)` 표기로 Codex 호출.
 - 같은 persona 를 두 모델로 양쪽에서 활용 (Phase 2 이중 검토 등).
 
 **레이어 분리:**
-- `call-codex-cli` (skill) = Codex 호출 mechanics (프롬프트 내용 알지 않음)
+- `call-as-codex` (skill) = Codex 호출 mechanics (프롬프트 내용 알지 않음)
 - `agents/<name>.md` = 프롬프트 파일 (호출 방식 알지 않음)
-- 호출자 = 두 레이어를 조합 — `call-codex-cli(<plugin>:<name>)` 표기로 참조
+- 호출자 = 두 레이어를 조합 — `call-as-codex(<plugin>:<name>)` 표기로 참조
 
 ### 외부 Agent Pool
 
@@ -94,18 +94,18 @@ lstack/
 | 보안 감사 (심층) | `gstack:cso` | STRIDE, supply chain, CI/CD |
 
 **Codex Integration Pool** — 다른 모델(GPT-5 Codex)의 독립 시각. 모든 호출은
-`call-codex-cli(<plugin>:<name>)` 표기로 통일:
+`call-as-codex(<plugin>:<name>)` 표기로 통일:
 
 | 시점 | 호출 | 권한 | 용도 |
 |------|------|------|------|
-| Phase 2.1 설계 | `call-codex-cli(lstack:principal-engineer)` mode: design | write | Codex 가 로컬 코드 직접 읽어 plan.md `## 설계` 작성 |
-| Phase 2.2 critique | `call-codex-cli(lstack:principal-engineer)` mode: critique | write | Claude-작성 설계를 Codex 가 비판적 검토 → `### Codex 검토` append |
-| Phase 3+4 task diff review | `call-codex-cli(lstack:principal-engineer)` mode: review | read-only (fail-soft) | task commit diff 에 대한 객관 리뷰 (FF + adversarial 관점 통합) |
-| Phase 3+4 복잡성 refactor | `call-codex-cli(lstack:principal-engineer)` mode: refactor | write | review 가 복잡성 신호 보고 시 동작 보존 리팩터 |
-| Phase 3+4 verdict | `call-codex-cli(lstack:judge)` | read-only | evidence 기반 PASS/RALPH/RESCUE/ESCALATE 판정 |
+| Phase 2.1 설계 | `call-as-codex(lstack:principal-engineer)` mode: design | write | Codex 가 로컬 코드 직접 읽어 plan.md `## 설계` 작성 |
+| Phase 2.2 critique | `call-as-codex(lstack:principal-engineer)` mode: critique | write | Claude-작성 설계를 Codex 가 비판적 검토 → `### Codex 검토` append |
+| Phase 3+4 task diff review | `call-as-codex(lstack:principal-engineer)` mode: review | read-only (fail-soft) | task commit diff 에 대한 객관 리뷰 (FF + adversarial 관점 통합) |
+| Phase 3+4 복잡성 refactor | `call-as-codex(lstack:principal-engineer)` mode: refactor | write | review 가 복잡성 신호 보고 시 동작 보존 리팩터 |
+| Phase 3+4 verdict | `call-as-codex(lstack:judge)` | read-only | evidence 기반 PASS/RALPH/RESCUE/ESCALATE 판정 |
 | Ralph-loop 3회 실패 후 | `codex:codex-rescue --write` | write | 다른 모델의 마지막 시도 (외부 agent) |
 
-**호출 패턴** (`call-codex-cli`):
+**호출 패턴** (`call-as-codex`):
 1. Codex availability 체크 (script 존재 + 호출 성공).
 2. AVAILABLE → `agents/<name>.md` 의 frontmatter 블록 제거 후 본문만 + 호출자 context 를 Codex 에 주입, stdout verbatim 반환.
 3. UNAVAILABLE → hard fail. 에러를 메인 컨텍스트에 보고 (판단/조치는 메인 컨텍스트가 결정).
@@ -146,15 +146,15 @@ lstack Skill (PM 진입점)
     │  Phase 0: State Detect ── worklog 스캔 + plan.md 섹션 분석 → 새 작업/resume 판별
     │  Phase 1: Interview ─── hoyeon:interviewer
     │  Phase 2: Design
-    │     2.1-2.3 call-codex-cli(lstack:principal-engineer) ── Codex가 직접 코드 읽고 조사 + 설계
+    │     2.1-2.3 call-as-codex(lstack:principal-engineer) ── Codex가 직접 코드 읽고 조사 + 설계
     │     2.4 planner ──────── ## 태스크 › ### Tn: (skeleton — action + exec + 힌트 1-3줄)
-    │     2.5 test-planner ─── 각 태스크 밑에 AC 추가 → 사용자 승인
+    │     2.5 test-designer ─── 각 태스크 밑에 AC 추가 → 사용자 승인
     │  Phase 3+4: Execute+Verify+Review (pipelined)
     │     orchestrator ─────── wave 단위 백그라운드 병렬 dispatch
     │       └─ 각 task 완료 → verify ACs ∥ FF review ∥ Codex adversarial(LOC>50) fan-out
-    │       └─ evidence 패키지 → call-codex-cli(lstack:judge)
+    │       └─ evidence 패키지 → call-as-codex(lstack:judge)
     │           → PASS / RALPH / RESCUE / ESCALATE 결정
-    │       └─ 복잡성 신호 → call-codex-cli(lstack:principal-engineer) review mode fan-out
+    │       └─ 복잡성 신호 → call-as-codex(lstack:principal-engineer) review mode fan-out
     │       └─ 3회 ralph 실패 → Codex Rescue 폴백 1회 → 그래도 실패 시 사용자 에스컬레이션
     │  Phase 5: Spec 업데이트 ── docs/spec/ SSOT 반영
     │  Phase 6: Compound ───── /compound (하니스 문제 시)
@@ -247,11 +247,13 @@ orchestrator 가 plan.md 의 섹션 상태로 현재 phase 를 추론할 때 이
 | `## 배경` 있음, `## 설계` 없음 | Phase 1 (Interview) → Phase 2.1 | interviewer → principal-engineer 설계 |
 | `## 설계` › `### 결정` 있음, `### Codex 검토` 없음 | Phase 2.2 (Codex Critique) | principal-engineer (Codex) critique 호출 |
 | `### Codex 검토` 있음, `### 최종 확정` 없음 | Phase 2.3 (User 승인 대기) | 사용자에게 설계+검토 제시, 피드백 수렴 |
-| `### 최종 확정` 있음, `## 태스크` 에 `### Tn` 없음 | Phase 2.4 (Planner) | planner dispatch |
-| `### Tn` 있음, AC 없음 | Phase 2.5 (Test Designer) | test-planner dispatch |
+| `### 최종 확정 (User 승인 YYYY-MM-DD)` 있음 (SSOT), `## 태스크` 에 `### Tn` 없음 | Phase 2.4 (Planner) | planner dispatch |
+| `### Tn` 있음, AC 없음 | Phase 2.5 (Test Designer) | test-designer dispatch |
 | AC 있음, 대기 태스크 존재 | Phase 3+4 (Execute+Verify+Review) | orchestrator pipeline |
 | 모든 태스크 완료 | Phase 5 (Spec 업데이트) | docs/spec/ SSOT 반영 |
 | Phase 5 완료 | Phase 6 (Compound) | /compound (선택) |
+
+**Approval contract (SSOT):** `### 최종 확정 (User 승인 YYYY-MM-DD)` 블록은 orchestrator/PM 이 사용자 승인을 확인한 뒤 plan.md `## 설계` 하단에 기록한다. 이 블록의 존재가 Phase 2.3 → 2.4 전이의 유일한 게이트이다. 작성자 · 승인 방식 · 전이 규칙은 이 표에서만 정의하며, 다른 문서는 이 SSOT 를 참조한다.
 
 ## Compound Self-Improvement Loop
 

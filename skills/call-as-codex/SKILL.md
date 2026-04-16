@@ -1,5 +1,5 @@
 ---
-name: call-codex-cli
+name: call-as-codex
 description: |
   Codex CLI(codex-companion.mjs)를 호출해 작업을 위임한다.
   호출자가 준 prompt 파일 + context를 조합해 Codex에 전달하고 stdout을 verbatim 반환.
@@ -7,7 +7,7 @@ description: |
   Codex 미설치/실패 시 hard fail — 에러를 호출자(메인 컨텍스트)에게 그대로 보고. fallback 없음.
 ---
 
-# call-codex-cli — Codex CLI 호출 래퍼 (mechanics only)
+# call-as-codex — Codex CLI 호출 래퍼 (mechanics only)
 
 **Mechanics 레이어.** 어떤 프롬프트인지, 어떤 작업인지 알지 않는다.
 호출자가 프롬프트 파일 참조 + 컨텍스트만 주면 Codex에 전달하고 결과를 반환.
@@ -18,16 +18,16 @@ resolve 해서 Codex에 주입하는 역할만 한다.
 ## 표기
 
 ```
-call-codex-cli(<plugin>:<name>)
+call-as-codex(<plugin>:<name>)
 ```
 
 예:
-- `call-codex-cli(lstack:principal-engineer)` — lstack 플러그인의 principal-engineer 프롬프트
+- `call-as-codex(lstack:principal-engineer)` — lstack 플러그인의 principal-engineer 프롬프트
 - 참조 → `${CLAUDE_PLUGIN_ROOT}/agents/principal-engineer.md` 로 resolve
 
 ## 사용 시나리오
 
-- 객관적이고 전문적인 기술 판단이 필요할 때 (예: `call-codex-cli(lstack:principal-engineer)`)
+- 객관적이고 전문적인 기술 판단이 필요할 때 (예: `call-as-codex(lstack:principal-engineer)`)
 - 메인 컨텍스트와 분리된 프레시 컨텍스트에서 판단해야 할 때
 - Codex가 로컬 코드베이스를 직접 읽고 판단해야 할 때
 

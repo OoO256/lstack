@@ -9,7 +9,7 @@
     {
       "name": "lstack",
       "description": "Personal development workflow harness — PM orchestration, design, execution, verification",
-      "version": "1.0.0",
+      "version": "2.0.1",
       "author": {
         "name": "Yonguk Lee"
       },

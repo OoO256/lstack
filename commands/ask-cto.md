@@ -5,7 +5,7 @@ argument-hint: <질문>
 
 # ask-cto — Independent Technical Advisor
 
-`lstack:call-codex-cli` skill에 `lstack:principal-engineer` 프롬프트를 주입하여 프레시한 컨텍스트의
+`lstack:call-as-codex` skill에 `lstack:principal-engineer` 프롬프트를 주입하여 프레시한 컨텍스트의
 객관적 기술 조언을 받는 커맨드. 현재 대화의 편향 없이 Codex가 코드베이스를 직접 읽고 판단한다.
 
 ## Workflow
@@ -27,9 +27,9 @@ argument-hint: <질문>
 - 구체적인 질문 또는 검토 요청
 - 고려 중인 대안이 있으면 포함
 
-### Step 3: `call-codex-cli(lstack:principal-engineer)` 호출
+### Step 3: `call-as-codex(lstack:principal-engineer)` 호출
 
-`lstack:call-codex-cli` skill을 호출한다.
+`lstack:call-as-codex` skill을 호출한다.
 - `prompt_file`: `lstack:principal-engineer`
 - `context`: 아래 템플릿으로 채워서 전달
 - `write`: 생략 (read-only — 조언만 받는다)
