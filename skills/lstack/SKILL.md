@@ -81,9 +81,11 @@ ls -1dt docs/worklogs/*/  2>/dev/null | head -10
 가장 최근 worklog 부터 `plan.md`를 읽어 상태를 본다 (없으면 → 새 작업).
 
 ### 0.2 사용자 의도 추론
-- 발화에 "이어서", "계속", "resume" 또는 기존 worklog 이름이 포함 → 그 worklog 로 이어서
+- 발화에 "이어서", "계속", "resume" 또는 기존 worklog 이름이 포함 → 그 worklog 로 이어서 → **0.3 으로 직행 (0.4 Setup 스킵)**
 - 새 goal + in-progress worklog 존재 → 사용자에게 선택 질문
-- in-progress 없음 + 새 goal → 새 작업 (Phase 1로)
+- in-progress 없음 + 새 goal → 새 작업 → **0.4 Setup 으로 진행**
+
+즉 **resume 귀결이면 0.3**, **새 작업 귀결이면 0.4** 로 분기한다. 0.4 는 새 작업 분기에서만 호출한다.
 
 ### 0.3 Phase 추론 (resume 시)
 **SSOT: `docs/spec/ARCHITECTURE.md` § "plan.md 섹션 → Phase 매핑" 표.**
@@ -92,6 +94,33 @@ ls -1dt docs/worklogs/*/  2>/dev/null | head -10
 
 판별 결과를 사용자에게 짧게 보고:
 > "재개합니다: `<worklog>`, Phase X부터 진행합니다."
+
+resume 분기는 Phase 0.4 Setup 을 건너뛰고 바로 해당 phase 로 진입한다 (현재 branch/cwd 는 사용자 책임).
+
+### 0.4 Setup (new work only)
+
+**0.2 가 "새 작업" 으로 귀결된 경우에만 실행.** resume 분기는 이 단계를 건너뛴다.
+
+0.2 에서 사용자 발화로부터 `provisional_slug` 를 유도한다 (소문자 + `[a-z0-9-]` 중심 정규화).
+이어서 `setup` skill 을 호출해 브랜치/worktree 를 확정한다:
+
+```
+Skill({
+  skill: "setup",
+  args:
+    provisional_slug: <0.2 에서 유도한 슬러그 후보>
+})
+```
+
+반환값 `{project_file, confirmed_slug, branch_mode, branch_name, worktree_path|null}` 을
+PM 세션 메모리에 보유한다 (plan.md 에 기록하지 않음 — ephemeral).
+
+- worktree 가 생성된 경우 setup skill 이 이미 `cd <worktree_path>` 를 수행한 상태다.
+  이후 모든 Bash/Skill/Codex/Agent 호출은 worktree cwd 기준으로 동작한다.
+- `confirmed_slug` 는 **Phase 1 이후 worklog 디렉토리 이름 생성에 재사용한다**
+  (`docs/worklogs/YYYY-MM-DD-<confirmed_slug>/`). branch name 과 worklog slug drift 방지.
+
+Setup 완료 후 Phase 1 로 진행한다.
 
 ---
 
@@ -109,7 +138,9 @@ Agent({
 
 PM은 반환된 goal + requirements 초안만 보유.
 **사용자에게 goal + requirements 초안을 보여주고 확인.** 확인되면 worklog 디렉토리
-`docs/worklogs/YYYY-MM-DD-<slug>/` 생성, plan.md `## 배경` 작성.
+`docs/worklogs/YYYY-MM-DD-<confirmed_slug>/` 생성, plan.md `## 배경` 작성.
+여기서 `<confirmed_slug>` 는 Phase 0.4 Setup 반환값의 `confirmed_slug` 를 그대로 재사용한다
+(Phase 1 에서 goal 문장이 다듬어져도 slug 는 setup 단계에서 확정된 값을 유지해 branch/worklog drift 를 막는다).
 
 ---
 
