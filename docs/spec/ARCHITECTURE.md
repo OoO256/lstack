@@ -201,7 +201,8 @@ plan.md (단일 SOT — docs/worklogs/YYYY-MM-DD-<confirmed_slug>/plan.md, `conf
 **설계는 결정 + 리스크만** (현재 상태/파일 리스트는 태스크 본문으로).
 **태스크는 `### Tn:` 헤더**, 상태는 헤더 suffix (`— 진행중` / `— 완료 \`sha\``). 마커 없음 = 대기.
 **결과 중심 기록** — 프로세스(검증 방법, 코드 리뷰 로그)는 적지 않는다.
-자세한 규칙과 좋은 예시는 `skills/write-plan-md/` 참조.
+**글쓰기 3원칙** (방침 중심 · 외부 개발자 가독성 · 간결) 은 모든 섹션에 공통. SSOT: `skills/write-plan-md/`.
+**두 단계 모드** — Phase 1-6 작업 중엔 저널(설계/검토/시행착오 모두 기록), Phase 7 close 후엔 PR 모드(`## 설계` → `## 구현 원칙` 변환, 중간 기록 삭제). 변환은 close skill 단일 책임. 아래 예시는 작업 중(저널) 구조이며, close 후 구조와 변환 규칙은 `skills/write-plan-md/` 참조.
 
 ```markdown
 # <goal>
@@ -260,6 +261,7 @@ Codex critique 결과. Phase 2.2 에서 작성.
 ### plan.md 섹션 → Phase 매핑 (SSOT)
 
 orchestrator 가 plan.md 의 섹션 상태로 현재 phase 를 추론할 때 이 표를 참조한다.
+**작업 중(저널 모드) plan.md 에만 적용된다.** close 후(PR 모드) plan.md 는 `## 설계` 가 삭제되고 `## 구현 원칙` 으로 교체되므로 이 표의 추론 대상이 아니며, resume 대상도 아니다 (작업 종료).
 
 | plan.md 섹션 상태 | Phase | 다음 행동 |
 |---|---|---|
