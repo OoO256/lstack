@@ -393,6 +393,20 @@ plan.md `## 태스크` worklog 읽고 하니스 문제 식별:
 
 ---
 
+## Phase 7: Close
+
+작업 종료 단계. **사용자 완료 확인** → plan.md 정리 (다른 개발자도 이해 가능하게,
+**구현 방침 중심**) → PR 작성 여부 인터뷰 → worktree 닫기.
+
+```
+Skill({ skill: "close" })
+```
+
+세부 절차 / 글쓰기 원칙 / anti-pattern 은 `skills/close/SKILL.md` 단일 SOT.
+이 phase 는 새 섹션을 만들지 않고 기존 plan.md 표현만 다듬는다 (구조 보존).
+
+---
+
 ## Resume Safety
 
 - plan.md 기존 내용을 덮어쓰지 않는다. 없는 부분만 채운다.
