@@ -51,6 +51,12 @@ lstack/
 - **트리거**: `/document`, "문서화", 또는 커밋 후 자동 리마인드
 - **역할**: 대화를 분석해서 worklog 작성 + spec SSOT 업데이트
 
+### close
+- **경로**: `skills/close/SKILL.md`
+- **트리거**: `/close`, "닫자", "마무리", "끝내자", 또는 lstack orchestrator Phase 7
+- **역할**: 사용자 완료 확인 → plan.md 를 다른 개발자도 이해 가능하도록 **구현 방침 중심**으로 정리 → PR 생성 여부 인터뷰 (생성 시 본문도 같은 원칙) → worktree 제거 (브랜치 유지)
+- **범위**: Phase 5 (Spec) · Phase 6 (Compound) 가 끝난 뒤 호출. 새 섹션 추가 / 태스크 구조 변경 금지 (표현만 다듬음).
+
 ---
 
 ## Agents
@@ -171,6 +177,7 @@ lstack Skill → 메인 컨텍스트가 PM 역할 직접 수행 (오케스트레
     │       └─ 3회 ralph 실패 → Codex Rescue 폴백 1회 → 그래도 실패 시 사용자 에스컬레이션
     │  Phase 5: Spec 업데이트 ── docs/spec/ SSOT 반영
     │  Phase 6: Compound ───── /compound (하니스 문제 시)
+    │  Phase 7: Close ───────── plan 정리 + PR 인터뷰 + worktree 닫기 (close skill)
 
 pipeline 구조 (wave N에서 task가 끝나는 순간 wave N+1 dispatch와
 verify+review fan-out이 동시에 진행 — 어느 task도 sibling을 기다리지 않음):
@@ -265,6 +272,7 @@ orchestrator 가 plan.md 의 섹션 상태로 현재 phase 를 추론할 때 이
 | AC 있음, 대기 태스크 존재 | Phase 3+4 (Execute+Verify+Review) | orchestrator pipeline |
 | 모든 태스크 완료 | Phase 5 (Spec 업데이트) | docs/spec/ SSOT 반영 |
 | Phase 5 완료 | Phase 6 (Compound) | /compound (선택) |
+| Phase 6 완료 | Phase 7 (Close) | close skill (plan 정리 + PR 인터뷰 + worktree 닫기) |
 
 Phase 0.4 Setup 은 새 worklog 생성 전에 호출되어 plan.md 를 생성하지 않는다 (ephemeral). 따라서 위 표의 추론 대상이 아니다. `skills/setup/SKILL.md` 참조.
 
