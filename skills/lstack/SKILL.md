@@ -188,8 +188,17 @@ Agent({
     - plan.md 경로
     - Verify Agent Pool 목록
     - "plan.md 의 각 ### Tn 블록 끝에 AC 체크박스를 추가하세요."
+    - "Behavior 신호가 있으면 `, behavior, candidate` 마커로 표시하고 `<behavior_candidates>` 블록을 반환에 포함하세요."
 })
 ```
+
+**Behavior 후보 사용자 확인.** 반환 메시지에 `<behavior_candidates>` 가 있으면
+사용자에게 한 번에 묻는다 (수락한 후보 / 거절한 후보):
+
+- 수락 → plan.md 의 해당 AC 행에서 `, candidate` 마커만 제거 (verify agent 는 chrome-devtools-mcp 로 검증).
+- 거절 → 해당 AC 행 삭제.
+
+후보 블록이 없으면 이 단계 스킵.
 
 **사용자에게 plan.md를 보여주고 승인을 받은 후 Phase 3로 진행.**
 
@@ -249,7 +258,7 @@ receive a completion notification for task Tn, dispatch ALL of the following in 
      subagent_type: "<AC's verify agent>",
      run_in_background: true,
      prompt:
-       - AC check text
+       - AC check text (`, behavior` 마커 포함 시 chrome-devtools-mcp skill 사용)
        - what was implemented (from Tn's report)
        - commit SHA(s) for Tn
        - "Report pass or fail with concrete evidence."

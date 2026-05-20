@@ -162,6 +162,7 @@ bcrypt + jsonwebtoken으로 구현. auth 에러 별도 처리 추가.
    - `- [ ] ACn: 검증 항목 (v: agent-name)` — 대기
    - `- [x] ACn: 검증 항목 (v: agent-name)` — 통과
    - AC는 구현 힌트 (수정/신규) 아래, 결과 요약 아래에 위치.
+   - Behavior AC 는 `(v: agent-name, behavior)` 마커 — verify agent 가 chrome-devtools-mcp 로 검증.
 
 4. **태스크 형식:** `### Tn: action (exec: agent-name)`
    - action은 **명사구 한 줄**. "OOO 구현", "XXX 교체" 수준.

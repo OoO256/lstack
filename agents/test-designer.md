@@ -47,7 +47,8 @@ model: inherit
        - **assertion**: read code and confirm property
        - **inspection**: check file existence/structure
     3. Assign verify agent from Verify Agent Pool per AC.
-    4. Append AC lines at the end of each `### Tn` task block.
+    4. UI / 사용자 인터랙션 / 시각적 변화 신호가 있는 AC 는 `, behavior, candidate` 마커로 후보 표기, 반환 메시지 끝에 `<behavior_candidates>` 블록 포함 → PM 이 사용자 확인.
+    5. Append AC lines at the end of each `### Tn` task block.
   </Process>
 
   <Output_Format>
@@ -68,6 +69,7 @@ model: inherit
     ```
 
     AC 는 `(v: agent-name)` 짧은 형식. `(verify: plugin:agent-name)` 풀네임은 쓰지 않는다.
+    Behavior 후보는 `(v: agent-name, behavior, candidate)` 까지 — PM 이 사용자 확인 후 `candidate` 제거.
   </Output_Format>
 
   <Failure_Modes>
