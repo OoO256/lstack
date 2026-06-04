@@ -68,6 +68,32 @@ writing design, writing ACs. Every one of these is delegated to a separate agent
 - `docs/spec/PRINCIPLE.md` — 하니스 원칙
 - `docs/spec/ARCHITECTURE.md` — 플러그인 구조, agent pool, plan.md 섹션 → phase 매핑 표
 
+## Session Recording Helper
+
+현재 Claude 세션 id 를 대상 plan.md 의 `## 세션` terminal section 에 기록하는 helper.
+SessionStart hook(`capture-session.sh`)이 `$LSTACK_CLAUDE_SESSION_ID` 에 세션 id 를 넣어두므로
+이후 Bash 호출에서 그 값을 읽어 한 줄을 추가한다. `claude --resume <id>` 로 세션 재개를 가능하게 하는 메타데이터다.
+
+규칙:
+- `$LSTACK_CLAUDE_SESSION_ID` 가 비어 있으면 **no-op** (비-Claude / hook 미설치 환경).
+- 값이 있으면 `## 세션` 에 `- \`<id>\` (YYYY-MM-DD)` 한 줄 추가 (날짜는 당일 `date +%Y-%m-%d`).
+- **dedupe**: 같은 id 가 이미 `## 세션` 에 있으면 추가하지 않는다 (helper 재실행 안전).
+- `## 세션` 섹션이 없으면 파일 맨 끝에 생성한다 (terminal section — write-plan-md SSOT 의 terminal insertion 규칙: `## 세션` 은 항상 마지막 섹션, 최신이 맨 아래).
+
+PM 이 아래 한 줄짜리 Bash 를 그대로 실행한다 (`PLAN` 만 대상 plan.md 경로로 치환):
+
+```bash
+PLAN="docs/worklogs/YYYY-MM-DD-<slug>/plan.md"
+if [ -n "$LSTACK_CLAUDE_SESSION_ID" ] && ! grep -qF "\`$LSTACK_CLAUDE_SESSION_ID\`" "$PLAN"; then
+  line="- \`$LSTACK_CLAUDE_SESSION_ID\` ($(date +%Y-%m-%d))"
+  if grep -qxF '## 세션' "$PLAN"; then
+    printf '%s\n' "$line" >> "$PLAN"
+  else
+    printf '\n## 세션\n%s\n' "$line" >> "$PLAN"
+  fi
+fi
+```
+
 ---
 
 ## Phase 0: State Detection
@@ -95,6 +121,9 @@ phase 판정에는 workflow marker(`## 설계` · `### 최종 확정` · `### Tn
 
 판별 결과를 사용자에게 짧게 보고:
 > "재개합니다: `<worklog>`, Phase X부터 진행합니다."
+
+resume worklog 가 확정되면 **Session Recording Helper 를 호출**해 현재 세션 id 를 그 plan.md 의
+`## 세션` 에 기록한다 (이미 같은 id 면 dedupe 로 no-op).
 
 resume 분기는 Phase 0.4 Setup 을 건너뛰고 바로 해당 phase 로 진입한다 (현재 branch/cwd 는 사용자 책임).
 
@@ -142,6 +171,9 @@ PM은 반환된 goal + requirements 초안만 보유.
 `docs/worklogs/YYYY-MM-DD-<confirmed_slug>/` 생성, plan.md `## 배경` 작성.
 여기서 `<confirmed_slug>` 는 Phase 0.4 Setup 반환값의 `confirmed_slug` 를 그대로 재사용한다
 (Phase 1 에서 goal 문장이 다듬어져도 slug 는 setup 단계에서 확정된 값을 유지해 branch/worklog drift 를 막는다).
+
+worklog 디렉토리 생성 + `## 배경` 작성 직후 **Session Recording Helper 를 호출**해 현재 세션 id 를
+새 plan.md 의 `## 세션` 에 기록한다 (`## 세션` 이 없으므로 helper 가 생성).
 
 ---
 
