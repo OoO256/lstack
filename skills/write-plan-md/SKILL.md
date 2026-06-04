@@ -130,7 +130,18 @@ bcrypt + jsonwebtoken으로 구현. auth 에러 별도 처리 추가.
 - 스코프 밖이지만 기록할 가치가 있는 것
 - 코드 리뷰에서 나온 Critical/Important findings
 - 구현 중 발견된 남은 리스크
+
+## 세션
+- `<session-id>` (YYYY-MM-DD)
+- `<session-id>` (YYYY-MM-DD)
 ```
+
+**`## 세션` (선택, terminal section)** — Claude Code session id 기록. `claude --resume <session-id>` 로 그 세션을 재개할 수 있게 하는 메타데이터다.
+- 항목 형식: `- \`<session-id>\` (YYYY-MM-DD)` 목록.
+- 멀티 세션이면 날짜와 함께 누적, **최신이 맨 아래**.
+- 이 섹션은 phase 상태가 아닌 **terminal metadata**다. phase 추론(섹션→Phase 매핑)은 이 섹션을 무시한다.
+- **terminal insertion 규칙:** `## 세션`은 항상 plan.md 의 **마지막 섹션**. `## 향후 과제` 등 다른 섹션을 추가/수정할 때는 `## 세션` **앞에 삽입**한다 (단순 EOF append 금지).
+- **PR body 복사 금지:** session id 는 local resume handle 이므로 plan.md 에는 유지하되 PR body 등 외부 공유 텍스트에는 복사하지 않는다.
 
 ## 섹션별 소유자
 
@@ -145,6 +156,7 @@ bcrypt + jsonwebtoken으로 구현. auth 에러 별도 처리 추가.
 | `## 태스크` — AC 추가 | test-designer | Phase 2.5 |
 | `## 태스크` — 상태 전이 + 결과 기록 | orchestrator | Phase 3+4 |
 | `## 향후 과제` | 누구나 추가 가능 | 아무 때나 |
+| `## 세션` | PM (lstack skill 세션 기록 helper) | Phase 1 worklog 생성 직후 + Phase 0.3 resume 확정 직후 |
 
 **요구사항 섹션은 없다.** 요구사항은 `## 배경`에 한두 문장으로, 나머지는 태스크가 표현한다.
 
@@ -226,6 +238,7 @@ Phase 7 close 에서 저널 → PR 모드로 한 번 변환한다. PR 리뷰어�
 - 태스크 결과 요약 1-2줄 (방침 단어로 다듬는다).
 - AC 체크박스 (`[x]`) — 어떤 검증 기준을 통과했는지 PR 리뷰어가 확인.
 - 태스크 본문의 `수정/신규` 힌트 — 선택. 너무 길면 압축.
+- `## 세션` (terminal section) — 히스토리/수동 resume 힌트 용도로 보존. PR body 에는 복사하지 않는다.
 
 **신설하는 것:**
 - `## 구현 원칙` — `## 설계 › ### 결정` 의 핵심을 외부 가독성 원칙으로 다시 쓴다. PR body 의 `## 구현 원칙` 섹션과 동일한 내용 (close 시 그대로 복사).
