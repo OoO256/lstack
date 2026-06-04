@@ -72,26 +72,22 @@ writing design, writing ACs. Every one of these is delegated to a separate agent
 
 현재 Claude 세션 id 를 대상 plan.md 의 `## 세션` terminal section 에 기록하는 helper.
 SessionStart hook(`capture-session.sh`)이 `$LSTACK_CLAUDE_SESSION_ID` 에 세션 id 를 넣어두므로
-이후 Bash 호출에서 그 값을 읽어 한 줄을 추가한다. `claude --resume <id>` 로 세션 재개를 가능하게 하는 메타데이터다.
+이후 Bash 호출에서 `hooks/scripts/record-session.sh` 가 그 값을 읽어 한 줄을 추가한다.
+`claude --resume <id>` 로 세션 재개를 가능하게 하는 메타데이터다.
 
 규칙:
 - `$LSTACK_CLAUDE_SESSION_ID` 가 비어 있으면 **no-op** (비-Claude / hook 미설치 환경).
 - 값이 있으면 `## 세션` 에 `- \`<id>\` (YYYY-MM-DD)` 한 줄 추가 (날짜는 당일 `date +%Y-%m-%d`).
-- **dedupe**: 같은 id 가 이미 `## 세션` 에 있으면 추가하지 않는다 (helper 재실행 안전).
-- `## 세션` 섹션이 없으면 파일 맨 끝에 생성한다 (terminal section — write-plan-md SSOT 의 terminal insertion 규칙: `## 세션` 은 항상 마지막 섹션, 최신이 맨 아래).
+- **dedupe**: 같은 id 가 이미 `## 세션` 섹션 안에 있으면 추가하지 않는다 (helper 재실행 안전).
+- `## 세션` 섹션이 없으면 파일 맨 끝에 생성한다.
+- `## 세션` 뒤에 다른 섹션이 있는 비정상 plan.md 에서는 EOF append 대신 기존 `## 세션` 블록 안에 삽입한다.
+- plan.md 구조/terminal insertion 규칙은 `skills/write-plan-md/SKILL.md` 가 SSOT 이며, SKILL.md 에 실행 로직을 복제하지 않는다.
 
-PM 이 아래 한 줄짜리 Bash 를 그대로 실행한다 (`PLAN` 만 대상 plan.md 경로로 치환):
+PM 이 아래 Bash 를 그대로 실행한다 (`PLAN` 만 대상 plan.md 경로로 치환):
 
 ```bash
 PLAN="docs/worklogs/YYYY-MM-DD-<slug>/plan.md"
-if [ -n "$LSTACK_CLAUDE_SESSION_ID" ] && ! grep -qF "\`$LSTACK_CLAUDE_SESSION_ID\`" "$PLAN"; then
-  line="- \`$LSTACK_CLAUDE_SESSION_ID\` ($(date +%Y-%m-%d))"
-  if grep -qxF '## 세션' "$PLAN"; then
-    printf '%s\n' "$line" >> "$PLAN"
-  else
-    printf '\n## 세션\n%s\n' "$line" >> "$PLAN"
-  fi
-fi
+bash hooks/scripts/record-session.sh "$PLAN"
 ```
 
 ---
