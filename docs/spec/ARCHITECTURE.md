@@ -147,7 +147,7 @@ lstack/
 | Hook | 타입 | 동작 |
 |------|------|------|
 | commit-document-reminder | PostToolUse(Bash) | `git commit` 감지 → `/document` 리마인드. async |
-| validate-plan | PostToolUse(Write\|Edit) | `plan.md` 수정 시 필수 섹션(배경, 설계, 태스크) 체크 + deprecated `## 요구사항` 경고. sync |
+| validate-plan | PostToolUse(Write\|Edit) | `plan.md` 수정 시 phase-aware 검증 — `## 배경`만 hard-require (설계/태스크는 Phase 1-2에서 정상적으로 부재 가능) + deprecated `## 요구사항` 경고. sync |
 | capture-session | SessionStart | stdin JSON 의 `session_id` 를 `$CLAUDE_ENV_FILE` 에 `export LSTACK_CLAUDE_SESSION_ID=<id>` 로 노출. stdout 없음, `session_id`/`$CLAUDE_ENV_FILE` 부재 시 no-op |
 
 ---
