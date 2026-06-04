@@ -90,6 +90,7 @@ ls -1dt docs/worklogs/*/  2>/dev/null | head -10
 ### 0.3 Phase 추론 (resume 시)
 **SSOT: `docs/spec/ARCHITECTURE.md` § "plan.md 섹션 → Phase 매핑" 표.**
 섹션 존재 여부를 상단에서 하단으로 확인하여 해당 phase 로 분기.
+phase 판정에는 workflow marker(`## 설계` · `### 최종 확정` · `### Tn` · AC 상태)만 본다. `## 세션` 은 terminal metadata 이므로 phase 판정에서 **제외한다** (top-down 섹션 스캔이 `## 세션` 때문에 오분기하지 않도록).
 `### 최종 확정` 블록 부재 시 Phase 2.3 (승인 대기) 판정 (approval contract 상세는 ARCHITECTURE.md 참조).
 
 판별 결과를 사용자에게 짧게 보고:
