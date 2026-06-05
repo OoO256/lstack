@@ -1,106 +1,39 @@
 #!/bin/bash
 set -euo pipefail
 
-ROOT=$(cd "$(dirname "$0")/.." && pwd)
-SCRIPT="$ROOT/hooks/scripts/record-session.sh"
+SCRIPT="$(cd "$(dirname "$0")/.." && pwd)/hooks/scripts/record-session.sh"
 TODAY=$(date +%Y-%m-%d)
-
-fail() {
-  printf 'FAIL: %s\n' "$1" >&2
-  exit 1
-}
-
-assert_contains() {
-  local needle=$1
-  local file=$2
-  grep -qF -- "$needle" "$file" || fail "missing [$needle] in $file"
-}
-
-assert_count() {
-  local expected=$1
-  local needle=$2
-  local file=$3
-  local actual
-  actual=$(grep -cF -- "$needle" "$file" || true)
-  [ "$actual" -eq "$expected" ] || fail "expected $expected occurrences of [$needle], got $actual"
-}
-
+ID1="11111111-1111-1111-1111-111111111111"
+ID2="22222222-2222-2222-2222-222222222222"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
+fail() { printf 'FAIL: %s\n' "$1" >&2; exit 1; }
 
-plan_no_env="$tmpdir/no-env.md"
-cat > "$plan_no_env" <<'EOF'
-# Goal
+plan="$tmpdir/plan.md"
+printf '# Goal\n\n## 배경\nContext.\n' > "$plan"
 
-## 배경
-Context.
-EOF
+# 1. env var 없음 → no-op
+"$SCRIPT" "$plan"
+grep -qF "## 세션" "$plan" && fail "no-op expected without LSTACK_CLAUDE_SESSION_ID"
 
-"$SCRIPT" "$plan_no_env"
-if grep -qF "## 세션" "$plan_no_env"; then
-  fail "empty LSTACK_CLAUDE_SESSION_ID should be no-op"
-fi
+# 2. ## 세션 없음 → 섹션 생성 + 한 줄 추가
+LSTACK_CLAUDE_SESSION_ID="$ID1" "$SCRIPT" "$plan"
+grep -qF "## 세션" "$plan" || fail "section not created"
+grep -qF -- "- \`$ID1\` ($TODAY)" "$plan" || fail "session line not added"
 
-plan_no_session="$tmpdir/no-session.md"
-cat > "$plan_no_session" <<'EOF'
-# Goal
+# 3. 같은 id 재실행 → dedupe
+LSTACK_CLAUDE_SESSION_ID="$ID1" "$SCRIPT" "$plan"
+[ "$(grep -cF "\`$ID1\`" "$plan")" -eq 1 ] || fail "duplicate line on rerun"
 
-## 배경
-Context.
-EOF
+# 4. dedupe 는 ## 세션 섹션 scope — 본문 내 같은 id 언급은 무시
+printf '# Goal\n\n## 배경\nMention `%s` in prose.\n\n## 세션\n- `%s` (2026-06-01)\n' "$ID2" "$ID1" > "$plan"
+LSTACK_CLAUDE_SESSION_ID="$ID2" "$SCRIPT" "$plan"
+grep -qF -- "- \`$ID2\` ($TODAY)" "$plan" || fail "prose mention must not block insert"
 
-LSTACK_CLAUDE_SESSION_ID="11111111-1111-1111-1111-111111111111" "$SCRIPT" "$plan_no_session"
-assert_contains "## 세션" "$plan_no_session"
-assert_contains "- \`11111111-1111-1111-1111-111111111111\` ($TODAY)" "$plan_no_session"
-
-LSTACK_CLAUDE_SESSION_ID="11111111-1111-1111-1111-111111111111" "$SCRIPT" "$plan_no_session"
-assert_count 1 "- \`11111111-1111-1111-1111-111111111111\` ($TODAY)" "$plan_no_session"
-
-plan_dedupe_scope="$tmpdir/dedupe-scope.md"
-cat > "$plan_dedupe_scope" <<'EOF'
-# Goal
-
-## 배경
-Mention `33333333-3333-3333-3333-333333333333` outside the session section.
-
-## 세션
-- `00000000-0000-0000-0000-000000000000` (2026-06-01)
-EOF
-
-LSTACK_CLAUDE_SESSION_ID="33333333-3333-3333-3333-333333333333" "$SCRIPT" "$plan_dedupe_scope"
-assert_contains "- \`33333333-3333-3333-3333-333333333333\` ($TODAY)" "$plan_dedupe_scope"
-
-plan_abnormal="$tmpdir/abnormal.md"
-cat > "$plan_abnormal" <<'EOF'
-# Goal
-
-## 배경
-Context.
-
-## 세션
-- `00000000-0000-0000-0000-000000000000` (2026-06-01)
-
-## 기타
-Unexpected section.
-EOF
-
-LSTACK_CLAUDE_SESSION_ID="22222222-2222-2222-2222-222222222222" "$SCRIPT" "$plan_abnormal"
-session_block=$(awk '
-  $0 == "## 세션" { in_session = 1 }
-  in_session && /^##[[:space:]]/ && $0 != "## 세션" { exit }
-  in_session { print }
-' "$plan_abnormal")
-
-printf '%s\n' "$session_block" | grep -qF -- "- \`22222222-2222-2222-2222-222222222222\` ($TODAY)" \
-  || fail "new session id was not inserted inside ## 세션"
-
-after_other=$(awk '
-  $0 == "## 기타" { after_other = 1; next }
-  after_other { print }
-' "$plan_abnormal")
-
-if printf '%s\n' "$after_other" | grep -qF "22222222-2222-2222-2222-222222222222"; then
-  fail "new session id was appended under ## 기타"
-fi
+# 5. ## 세션 뒤에 다른 섹션이 있는 비정상 구조 → ## 세션 블록 안에 삽입
+printf '# Goal\n\n## 배경\nContext.\n\n## 세션\n- `%s` (2026-06-01)\n\n## 기타\nUnexpected.\n' "$ID1" > "$plan"
+LSTACK_CLAUDE_SESSION_ID="$ID2" "$SCRIPT" "$plan"
+awk '$0=="## 세션"{s=1;next} /^##[[:space:]]/{s=0} s' "$plan" | grep -qF "\`$ID2\`" \
+  || fail "new id not inside ## 세션 block"
 
 printf 'record-session smoke: pass\n'

@@ -55,8 +55,7 @@ lstack/
 - **경로**: `skills/close/SKILL.md`
 - **트리거**: `/close`, "닫자", "마무리", "끝내자", 또는 lstack orchestrator Phase 7
 - **역할**: 사용자 완료 확인 → plan.md 를 다른 개발자도 이해 가능하도록 **구현 방침 중심**으로 정리 → PR 생성 여부 인터뷰 (생성 시 본문도 같은 원칙) → worktree 제거 (브랜치 유지)
-- **세션 목록**: PR 모드 변환 후에도 `## 세션`은 보존(히스토리/수동 resume 힌트). 단 session id 는 local resume handle 이라 PR body 등 외부 공유 텍스트에는 복사하지 않는다.
-- **범위**: Phase 5 (Spec) · Phase 6 (Compound) 가 끝난 뒤 호출. 새 섹션 추가 / 태스크 구조 변경 금지 (표현만 다듬음).
+- **범위**: Phase 5 (Spec) · Phase 6 (Compound) 가 끝난 뒤 호출. 새 섹션 추가 / 태스크 구조 변경 금지 (표현만 다듬음). `## 세션` 처리 규칙은 `skills/close/SKILL.md` 참조.
 
 ---
 
@@ -179,7 +178,7 @@ lstack Skill → 메인 컨텍스트가 PM 역할 직접 수행 (오케스트레
     │       └─ 3회 ralph 실패 → Codex Rescue 폴백 1회 → 그래도 실패 시 사용자 에스컬레이션
     │  Phase 5: Spec 업데이트 ── docs/spec/ SSOT 반영
     │  Phase 6: Compound ───── /compound (하니스 문제 시)
-    │  Phase 7: Close ───────── plan 정리(`## 세션` 보존: 히스토리/수동 resume 힌트) + PR 인터뷰 + worktree 닫기 (close skill)
+    │  Phase 7: Close ───────── plan 정리 + PR 인터뷰 + worktree 닫기 (close skill)
 
 pipeline 구조 (wave N에서 task가 끝나는 순간 wave N+1 dispatch와
 verify+review fan-out이 동시에 진행 — 어느 task도 sibling을 기다리지 않음):
@@ -263,7 +262,7 @@ Codex critique 결과. Phase 2.2 에서 작성.
 - `<session-id>` (YYYY-MM-DD)
 ```
 
-`## 세션` (선택) 은 항상 plan.md 의 **마지막 섹션**인 terminal section 으로, `claude --resume <session-id>` 용 메타데이터를 누적한다 (`- \`<session-id>\` (YYYY-MM-DD)`, 최신이 맨 아래). phase 상태가 아니므로 phase 추론에서 무시한다 (아래 매핑 표 참조). 다른 섹션을 추가할 때는 `## 세션` 앞에 삽입한다. 형식·소유자·삽입 규칙 상세는 `skills/write-plan-md/` SSOT.
+`## 세션` (선택) 은 `claude --resume <session-id>` 용 terminal metadata — 형식·소유자·삽입 규칙은 `skills/write-plan-md/` SSOT.
 
 ### plan.md 섹션 → Phase 매핑 (SSOT)
 
