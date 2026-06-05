@@ -55,7 +55,7 @@ lstack/
 - **경로**: `skills/close/SKILL.md`
 - **트리거**: `/close`, "닫자", "마무리", "끝내자", 또는 lstack orchestrator Phase 7
 - **역할**: 사용자 완료 확인 → plan.md 를 다른 개발자도 이해 가능하도록 **구현 방침 중심**으로 정리 → PR 생성 여부 인터뷰 (생성 시 본문도 같은 원칙) → worktree 제거 (브랜치 유지)
-- **범위**: Phase 5 (Spec) · Phase 6 (Compound) 가 끝난 뒤 호출. 새 섹션 추가 / 태스크 구조 변경 금지 (표현만 다듬음).
+- **범위**: Phase 5 (Spec) · Phase 6 (Compound) 가 끝난 뒤 호출. 새 섹션 추가 / 태스크 구조 변경 금지 (표현만 다듬음). `## 세션` 처리 규칙은 `skills/close/SKILL.md` 참조.
 
 ---
 
@@ -146,7 +146,8 @@ lstack/
 | Hook | 타입 | 동작 |
 |------|------|------|
 | commit-document-reminder | PostToolUse(Bash) | `git commit` 감지 → `/document` 리마인드. async |
-| validate-plan | PostToolUse(Write\|Edit) | `plan.md` 수정 시 필수 섹션(배경, 설계, 태스크) 체크 + deprecated `## 요구사항` 경고. sync |
+| validate-plan | PostToolUse(Write\|Edit) | `plan.md` 수정 시 phase-aware 검증 — `## 배경`만 hard-require (설계/태스크는 Phase 1-2에서 정상적으로 부재 가능) + deprecated `## 요구사항` 경고. sync |
+| capture-session | SessionStart | stdin JSON 의 `session_id` 를 `$CLAUDE_ENV_FILE` 에 `export LSTACK_CLAUDE_SESSION_ID=<id>` 로 노출. stdout 없음, `session_id`/`$CLAUDE_ENV_FILE` 부재 시 no-op |
 
 ---
 
@@ -256,12 +257,19 @@ Codex critique 결과. Phase 2.2 에서 작성.
 - [ ] AC4: ... (v: verifier)
 
 ## 향후 과제
+
+## 세션
+- `<session-id>` (YYYY-MM-DD)
 ```
+
+`## 세션` (선택) 은 `claude --resume <session-id>` 용 terminal metadata — 형식·소유자·삽입 규칙은 `skills/write-plan-md/` SSOT.
 
 ### plan.md 섹션 → Phase 매핑 (SSOT)
 
 orchestrator 가 plan.md 의 섹션 상태로 현재 phase 를 추론할 때 이 표를 참조한다.
 **작업 중(저널 모드) plan.md 에만 적용된다.** close 후(PR 모드) plan.md 는 `## 설계` 가 삭제되고 `## 구현 원칙` 으로 교체되므로 이 표의 추론 대상이 아니며, resume 대상도 아니다 (작업 종료).
+
+**phase 추론은 workflow marker 만 본다.** 판정에 참여하는 마커는 `## 설계` · `### 최종 확정` · `### Tn` · AC 상태(`[ ]`/`[x]`) 뿐이다. `## 세션` 은 phase 상태가 아닌 **terminal metadata** 이므로 phase 추론에서 **무시한다** — naive top-down 섹션 스캔이 `## 세션` 때문에 잘못 분기하지 않도록 한다.
 
 | plan.md 섹션 상태 | Phase | 다음 행동 |
 |---|---|---|

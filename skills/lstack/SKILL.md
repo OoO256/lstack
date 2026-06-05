@@ -68,6 +68,17 @@ writing design, writing ACs. Every one of these is delegated to a separate agent
 - `docs/spec/PRINCIPLE.md` — 하니스 원칙
 - `docs/spec/ARCHITECTURE.md` — 플러그인 구조, agent pool, plan.md 섹션 → phase 매핑 표
 
+## Session Recording Helper
+
+SessionStart hook(`capture-session.sh`)이 노출한 `$LSTACK_CLAUDE_SESSION_ID` 를
+대상 plan.md 의 `## 세션` terminal section 에 기록한다 (`claude --resume <id>` 용 메타데이터).
+env var 가 비어 있으면 no-op. dedupe/섹션 생성/삽입 위치는 스크립트가 처리한다
+(`## 세션` 형식 SSOT: `skills/write-plan-md/SKILL.md`).
+
+```bash
+bash hooks/scripts/record-session.sh <plan.md 경로>
+```
+
 ---
 
 ## Phase 0: State Detection
@@ -90,10 +101,14 @@ ls -1dt docs/worklogs/*/  2>/dev/null | head -10
 ### 0.3 Phase 추론 (resume 시)
 **SSOT: `docs/spec/ARCHITECTURE.md` § "plan.md 섹션 → Phase 매핑" 표.**
 섹션 존재 여부를 상단에서 하단으로 확인하여 해당 phase 로 분기.
+phase 판정에는 workflow marker(`## 설계` · `### 최종 확정` · `### Tn` · AC 상태)만 본다. `## 세션` 은 terminal metadata 이므로 phase 판정에서 **제외한다** (top-down 섹션 스캔이 `## 세션` 때문에 오분기하지 않도록).
 `### 최종 확정` 블록 부재 시 Phase 2.3 (승인 대기) 판정 (approval contract 상세는 ARCHITECTURE.md 참조).
 
 판별 결과를 사용자에게 짧게 보고:
 > "재개합니다: `<worklog>`, Phase X부터 진행합니다."
+
+resume worklog 가 확정되면 **Session Recording Helper 를 호출**해 현재 세션 id 를 그 plan.md 의
+`## 세션` 에 기록한다 (이미 같은 id 면 dedupe 로 no-op).
 
 resume 분기는 Phase 0.4 Setup 을 건너뛰고 바로 해당 phase 로 진입한다 (현재 branch/cwd 는 사용자 책임).
 
@@ -141,6 +156,9 @@ PM은 반환된 goal + requirements 초안만 보유.
 `docs/worklogs/YYYY-MM-DD-<confirmed_slug>/` 생성, plan.md `## 배경` 작성.
 여기서 `<confirmed_slug>` 는 Phase 0.4 Setup 반환값의 `confirmed_slug` 를 그대로 재사용한다
 (Phase 1 에서 goal 문장이 다듬어져도 slug 는 setup 단계에서 확정된 값을 유지해 branch/worklog drift 를 막는다).
+
+worklog 디렉토리 생성 + `## 배경` 작성 직후 **Session Recording Helper 를 호출**해 현재 세션 id 를
+새 plan.md 의 `## 세션` 에 기록한다 (`## 세션` 이 없으므로 helper 가 생성).
 
 ---
 
