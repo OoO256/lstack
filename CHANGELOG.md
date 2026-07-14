@@ -1,5 +1,38 @@
 # Changelog
 
+## 3.0.0 - 2026-07-14
+
+두꺼운 오케스트레이터를 걷어내고 "intent, not stages" 로 재설계. 모델 성능 향상으로
+고정 스테이지·검증 게이트의 ROI 가 역전됐고, 반복 지시는 능동 발동 스킬로 대신한다.
+
+### Breaking
+
+- **Phase 0-7 오케스트레이터 제거**: judge verdict(PASS/RALPH/RESCUE/ESCALATE)·ralph-loop·
+  codex rescue·wave 스케줄러·plan.md 섹션→phase 매핑 전부 삭제.
+- **`lstack` 스킬 → `start`**: 진입점이 오케스트레이터가 아니라 격리+인터뷰+계획 착수만.
+- **plan.md 규약 변경**: `T1..Tn`/AC 체크박스 게이트·저널↔PR 모드 변환 제거. 최소 구조
+  (`## 배경`·`## 계획`·`## 향후 과제`) + 완료 마커 `✅`.
+- **Codex 자동 개입 제거**: `call-as-codex` 는 on-demand bare 메커니즘으로만 유지.
+
+### Added
+
+- **`show`**: 동작 확인 스킬. ① 사용자 수동 테스트 / ② agent e2e, Chrome CDP.
+- **`pr`**: code 올리기. draft/ready 질문·본인 assign·이전 PR 기반 reviewer 질문·인간용 desc.
+- **`review`**: 남의 PR 이해 돕기. 구조/데이터흐름 + 사용자입력→클라→백→영속화 리뷰 순서.
+- **PRINCIPLE.md**: 8개 개발 의도 + 커뮤니케이션 원칙 + 라이프사이클 arc 가이드로 재작성.
+
+### Changed
+
+- **`compound`**: 회고 → 하니스 자동화 **제안만** (close 직전 자동, 수락 시에만 harness-sage).
+- **`close`**: PR 인터뷰 분리(`pr` 로)·검증 제거. 완료 확인 + plan 정리 + worktree 닫기만.
+- **`start` 가 구 `setup` 흡수**: worktree 는 항상 origin/main 에서 새 브랜치 (의도 4).
+- 버전 정리: plugin.json/marketplace.json/package.json 을 모두 `3.0.0` 으로 동기 (기존 drift 해소).
+
+### Removed
+
+- agents `judge`·`principal-engineer`·`planner`·`test-designer`, command `ask-cto`,
+  hook `validate-plan` (v2 hookless). `harness-sage` 는 compound 용으로 유지.
+
 ## 2.0.1 - 2026-04-15
 
 ### Changed
