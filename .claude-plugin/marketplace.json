@@ -1,15 +1,15 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "lstack-dev",
-  "description": "Personal development workflow harness — PM orchestration, design, execution, verification",
+  "description": "Personal development workflow harness — thin bookend skills + intent-driven guide",
   "owner": {
     "name": "OoO256"
   },
   "plugins": [
     {
       "name": "lstack",
-      "description": "Personal development workflow harness — PM orchestration, design, execution, verification",
-      "version": "2.0.1",
+      "description": "Personal development workflow harness — thin bookend skills + intent-driven guide",
+      "version": "3.0.0",
       "author": {
         "name": "Yonguk Lee"
       },

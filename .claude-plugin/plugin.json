@@ -1,7 +1,7 @@
 {
   "name": "lstack",
-  "description": "Personal development workflow harness — PM orchestration, design, execution, verification",
-  "version": "2.4.0",
+  "description": "Personal development workflow harness — thin bookend skills + intent-driven guide",
+  "version": "3.0.0",
   "author": {
     "name": "Yonguk Lee"
   },
@@ -9,10 +9,10 @@
   "repository": "https://github.com/OoO256/lstack",
   "license": "MIT",
   "keywords": [
-    "pm",
-    "orchestration",
     "workflow",
-    "design",
-    "verification"
+    "development",
+    "worktree",
+    "pr",
+    "harness"
   ]
 }
