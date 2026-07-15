@@ -22,12 +22,17 @@ description: |
 
 ## 생성
 
+push 전에 최신 base 로 리베이스한다 — PR 이 뒤처진 base 를 향하지 않도록 (`/rebase` 와 동일):
+
 ```bash
+git fetch origin
+git rebase "origin/<base_branch>"   # 충돌 시 멈추고 사용자에게 보고, 임의 해결 금지
 git push -u origin <branch>
 gh pr create --assignee @me --reviewer <선택> \
   --title "<goal 한 줄>" --body-file <desc>   # draft 면 --draft 추가
 ```
 
+- `base_branch` 는 `skills/start/projects/<cwd-basename>.md` frontmatter 에서 읽는다. 없으면 `main`.
 - `gh pr edit` deprecation 우회: assignee · reviewer 는 `create` 플래그로 **한 번에** 넣는다.
   사후 수정이 필요하면 `gh api` 로 patch.
 - 생성 후 PR URL 을 보고한다.
