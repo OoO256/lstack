@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **`pr` 테스트 변경 스캔**: push 전 diff 의 테스트 변경을 훑어 change-detector 테스트(깨져도
+  버그가 아닌 테스트)를 플래그한다. 판별 기준·범주·grep 힌트는 `skills/pr/change-detector-tests.md`,
+  저작 시점 원칙은 PRINCIPLE 의도 3.
+
 ## 3.0.0 - 2026-07-14
 
 두꺼운 오케스트레이터를 걷어내고 "intent, not stages" 로 재설계. 모델 성능 향상으로

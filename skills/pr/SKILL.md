@@ -20,6 +20,15 @@ description: |
    비관여자도 이해 가능, 남은 한계 명시. UI/UX 변경은 캡처 첨부.
    plan.md `## 배경` · `## 계획` 을 소스로 재사용한다.
 
+## 테스트 변경 스캔 (change-detector 회피)
+
+diff 가 테스트를 건드리면 push 전에 change-detector 테스트를 훑어 사용자에게 플래그한다.
+[change-detector 테스트 스캔](./change-detector-tests.md) 의 grep 힌트로 후보를 좁히고 litmus 로 판정한다.
+건너뛰면 깨져도 버그가 아닌 테스트가 PR 에 그대로 실려 리뷰어가 매번 수동으로 지적하게 된다.
+
+- 후보를 근거와 함께 채팅에 제시하고 제거·수정 여부를 **묻는다**. 임의 삭제 금지.
+- 최종 판정은 맥락 판단이다 — 애매하면 KEEP.
+
 ## 생성
 
 push 전에 최신 base 로 리베이스한다 — PR 이 뒤처진 base 를 향하지 않도록 (`/rebase` 와 동일):
