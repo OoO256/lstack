@@ -32,9 +32,9 @@ lstack/
 
 | 스킬 | 경로 | 역할 |
 |------|------|------|
-| `start` | `skills/start/SKILL.md` | 진입점. origin/main → worktree 새 브랜치 + 의도 인터뷰 + 가이드 로드 + plan.md 착수. resume 자동 판별. 프로젝트 기본값 `skills/start/projects/<basename>.md` |
+| `start` | `skills/start/SKILL.md` | 진입점. origin/main → worktree 새 브랜치 + 의도 인터뷰 + 가이드 로드 + 구조 판단(의도 8) + plan.md 착수. resume 자동 판별. 프로젝트 기본값 `skills/start/projects/<basename>.md` |
 | `show` | `skills/show/SKILL.md` | 동작 확인. ① 사용자 수동 테스트 / ② agent e2e 검증, Chrome CDP |
-| `pr` | `skills/pr/SKILL.md` | code 올리기. draft/ready 질문·본인 assign·이전 PR 기반 reviewer 질문·인간용 desc·테스트 변경 change-detector 스캔 |
+| `pr` | `skills/pr/SKILL.md` | code 올리기. draft/ready 질문·본인 assign·이전 PR 기반 reviewer 질문·인간용 desc·테스트 변경 change-detector 스캔·구조 스캔(의도 8) |
 | `review` | `skills/review/SKILL.md` | 남의 PR 이해 돕기. 구조/데이터흐름 + 사용자입력→클라→백→영속화 리뷰 순서 |
 | `compound` | `skills/compound/SKILL.md` | 세션 지시 회고 → 하니스 자동화 제안 (제안만, close 직전 자동) |
 | `close` | `skills/close/SKILL.md` | 완료 확인 + plan.md 인간용 정리 + worktree 닫기 |
@@ -63,6 +63,7 @@ lstack/
 
 단일 SOT 이자 인간용 문서. 구조·글쓰기 규칙은 `skills/write-plan-md/` SSOT.
 최소 구조: `## 배경`(as-is → to-be) · `## 계획`(독립 작업 T1..Tn) · `## 향후 과제`(선택).
+구조 영향이 있는 작업은 선택적 `## 설계 › ### 구조`(이해 단위 → 모듈 매핑 + 기존 구조 적합성).
 상태머신·phase 매핑·AC 게이트 없음. 완료 마커 `✅`.
 
 ## 스킬/프롬프트 작성 원칙 (하니스 자체를 수정할 때)
