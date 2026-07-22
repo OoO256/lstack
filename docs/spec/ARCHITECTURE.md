@@ -32,7 +32,7 @@ lstack/
 
 | 스킬 | 경로 | 역할 |
 |------|------|------|
-| `start` | `skills/start/SKILL.md` | 진입점. origin/main → worktree 새 브랜치 + 의도 인터뷰 + 가이드 로드 + 구조 판단(의도 8) + plan.md 착수. resume 자동 판별. 프로젝트 기본값 `skills/start/projects/<basename>.md` |
+| `start` | `skills/start/SKILL.md` | 진입점. origin/main → worktree 새 브랜치 + 의도 인터뷰 + 가이드 로드 + 구조 판단(의도 8) + plan.md 착수. 계획 승인 continuation/resume 자동 판별 후 구현 위임 판단. 프로젝트 기본값 `skills/start/projects/<basename>.md` |
 | `show` | `skills/show/SKILL.md` | 동작 확인. ① 사용자 수동 테스트 / ② agent e2e 검증, Chrome CDP |
 | `pr` | `skills/pr/SKILL.md` | code 올리기. draft/ready 질문·본인 assign·이전 PR 기반 reviewer 질문·인간용 desc·테스트 변경 change-detector 스캔·구조 스캔(의도 8) |
 | `review` | `skills/review/SKILL.md` | 남의 PR 이해 돕기. 구조/데이터흐름 + 사용자입력→클라→백→영속화 리뷰 순서 |
@@ -54,10 +54,12 @@ lstack/
 
 없음. v2 는 hookless (`hooks/hooks.json` = `{}`).
 
-## 서브에이전트 위임 (의도 2)
+## 승인 후 서브에이전트 위임 (의도 1·2)
 
-독립 서브태스크는 더 싼 모델의 서브에이전트로 병렬 위임한다 (예: `general-purpose`(sonnet),
-`Explore`). 프로젝트에 설치된 전문 에이전트가 있으면 활용. 태스크당 1커밋 권장.
+`start`가 제안한 계획을 사용자가 짧게 승인해도 같은 workflow의 continuation으로 인식한다.
+위임 정책은 `PRINCIPLE.md` 의도 1·2, 규모 추정·파일 소유권 분리·결정 보고 절차는
+`skills/start/SKILL.md`의 `승인 후 실행 인계`가 SSOT다. 공유 계약과 같은 파일을 수정하는 작업은
+순차 처리한 뒤 나머지를 병렬화한다.
 
 ## plan.md
 

@@ -3,8 +3,10 @@ name: start
 description: |
   Use when the user says "/start", "/lstack", "시작", "이거 만들어", "이거 고쳐",
   "이어서", "계속", "resume", or gives a task needing planning and multi-step work.
+  Also resume this skill when the user briefly approves a plan it proposed (for example
+  "그래", "진행해", "해줘", or "go ahead").
   Sets up an isolated worktree, clarifies intent by interview, loads the dev guide,
-  and drafts plan.md. Auto-detects fresh start vs resume.
+  and drafts plan.md. Auto-detects fresh start, plan continuation, and resume.
 ---
 
 # start — 작업 시작 (격리 + 인터뷰 + 계획 착수)
@@ -12,12 +14,14 @@ description: |
 내가 매번 치는 시작 명령(worktree 격리 · 의도 인터뷰 · plan 착수)을 대신 발동한다.
 작업 방식은 `docs/spec/PRINCIPLE.md`(개발 가이드)를 따른다 — 이 스킬이 그 파일을 로드한다.
 
-## 0. resume vs new 판별
+## 0. continuation vs resume vs new 판별
 
 ```bash
 ls -1dt docs/worklogs/*/ 2>/dev/null | head -5
 ```
 
+- 직전 `start` 실행이 계획을 인라인으로 보여주고 확인을 요청했으며, 현재 발화가 짧은 승인
+  (예: "그래 / 진행해 / 해줘") → **continuation**: 아래 1~3을 반복하지 않고 4로 진행.
 - 발화가 "이어서 / 계속 / resume" 이거나 기존 worklog 를 지칭 → **resume**:
   해당 plan.md 를 읽고 "된 것(`✅`) / 남은 것" 을 채팅으로 요약 보고한 뒤 이어간다. (아래 1~3 스킵)
 - 그 외 새 작업 → **new**: 1 로 진행.
@@ -53,5 +57,20 @@ cd "<worktree_root>/<branch>"
 4. `write-plan-md` 스킬 구조로 plan.md 작성: `## 배경`(as-is → to-be) + `## 계획`(독립 작업 T1..Tn).
 5. 계획을 **채팅에 인라인**으로 보여주고 "이대로 갈까?" 가벼운 확인.
 
-확인되면 구현으로 넘어간다 — 분해 · 병렬 · 저가 서브에이전트 위임(의도 1·2)은 판단으로.
+## 4. 승인 후 실행 인계
+
+계획이 승인되면 구현 전에 아래를 한 번 판단하고 결과를 채팅에 한 줄로 남긴다.
+
+1. 계획의 태스크별 변경 파일과 유사 모듈 크기를 보고 예상 추가+삭제 라인을 합산해
+   `<300` / `≥300` 두 구간으로만 추정한다. 정확한 LOC 예측이 아니라 위임 결정을 위한 분류다.
+2. 독립적이고 경계가 명확한 태스크를 찾고, 각 태스크의 파일 소유권이 겹치지 않게 나눈다.
+   공유 계약·같은 파일을 바꾸는 작업은 먼저 순차 처리하고 그 뒤 병렬화한다.
+3. 메인이 상위 모델(fable/sol 또는 동급)이고 예상 구현 diff 가 `≥300`이면, 구현은
+   Sonnet/Terra급 서브에이전트에 병렬 위임하는 것을 기본으로 한다. 메인은 계획·감독·통합·검증을 맡는다.
+4. 위임할 수 없으면 `작업이 너무 작음`, `파일 경계가 겹침`, `하나의 공유 계약에 강결합`처럼
+   구체적인 이유를 남기고 로컬에서 진행한다. 단순히 "판단상"이라고 쓰지 않는다.
+
+예: `예상 ≥300줄 · T1/T2는 파일 경계가 달라 Sonnet/Terra에 병렬 위임 · 메인은 통합/검증`
+또는 `예상 <300줄 · 한 파일의 단일 계약 변경이라 로컬 진행`.
+
 이후 arc: 구현 → self-test → `/show` → `/pr` → `/compound` → `/close`.
