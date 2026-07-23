@@ -4,6 +4,8 @@
 
 ### Added
 
+- **start 공통 원칙 동봉**: `start`가 소비 프로젝트의 문서를 찾지 않고, 스킬과 함께 배포된
+  `references/PRINCIPLE.md`를 읽는다. 원본 spec과 동봉 사본은 동기화·검사 명령으로 일치시킨다.
 - **`pr` 테스트 변경 스캔**: push 전 diff 의 테스트 변경을 훑어 change-detector 테스트(깨져도
   버그가 아닌 테스트)를 플래그한다. 판별 기준·범주·grep 힌트는 `skills/pr/change-detector-tests.md`,
   저작 시점 원칙은 PRINCIPLE 의도 3.

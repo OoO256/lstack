@@ -1,5 +1,10 @@
 {
   "name": "lstack",
   "version": "3.0.0",
-  "type": "module"
+  "type": "module",
+  "scripts": {
+    "sync:start-principle": "sh scripts/sync-start-principle.sh",
+    "check:start-principle": "sh scripts/check-start-principle.sh",
+    "test": "npm run check:start-principle"
+  }
 }
