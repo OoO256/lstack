@@ -34,10 +34,10 @@ lstack/
 |------|------|------|
 | `start` | `skills/start/SKILL.md` | 진입점. origin/main → worktree 새 브랜치 + 의도 인터뷰 + 가이드 로드 + 구조 판단(의도 8) + plan.md 착수. resume 자동 판별. 프로젝트 기본값 `skills/start/projects/<basename>.md` |
 | `show` | `skills/show/SKILL.md` | 동작 확인. ① 사용자 수동 테스트 / ② agent e2e 검증, Chrome CDP |
-| `pr` | `skills/pr/SKILL.md` | code 올리기. draft/ready 질문·본인 assign·이전 PR 기반 reviewer 질문·인간용 desc·테스트 변경 change-detector 스캔·구조 스캔(의도 8) |
+| `pr` | `skills/pr/SKILL.md` | code 올리기. draft/ready 질문·본인 assign·이전 PR 기반 reviewer 질문·plan.md 인간용 정리→인간용 desc·테스트 변경 change-detector 스캔·구조 스캔(의도 8) |
 | `review` | `skills/review/SKILL.md` | 남의 PR 이해 돕기. 구조/데이터흐름 + 사용자입력→클라→백→영속화 리뷰 순서 |
 | `compound` | `skills/compound/SKILL.md` | 세션 지시 회고 → 하니스 자동화 제안 (제안만, close 직전 자동) |
-| `close` | `skills/close/SKILL.md` | 완료 확인 + plan.md 인간용 정리 + worktree 닫기 |
+| `close` | `skills/close/SKILL.md` | 완료 확인 + worktree 닫기 |
 | `write-plan-md` | `skills/write-plan-md/SKILL.md` | plan.md 구조 SSOT (최소 구조) |
 | `nobs` | `skills/nobs/SKILL.md` | 사용자에게 말하는 방식 SSOT — 결론 먼저 · 신규 용어 금지 · 최대한 짧게 · 중요도 순. `nobs-reminder` 훅이 매 턴 압축본을 주입 |
 | `call-as-codex` | `skills/call-as-codex/SKILL.md` | on-demand Codex 위임 mechanics 래퍼 (bare) |

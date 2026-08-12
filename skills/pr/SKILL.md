@@ -3,7 +3,8 @@ name: pr
 description: |
   Use when the user says "/pr", "code 올려", "pr 올려", "pr 만들어" — creating a PR
   for the current work. Always asks draft vs ready, assigns the user, checks the user's
-  recent PRs to suggest a reviewer, and writes a human-readable description.
+  recent PRs to suggest a reviewer, polishes plan.md for outside readers, and writes
+  a human-readable description.
 ---
 
 # pr — code 올리기
@@ -16,9 +17,13 @@ description: |
    ```bash
    gh pr list --author @me --state all --limit 10 --json reviewRequests,reviews
    ```
-4. **desc = 인간용 (의도 7)** — 방침 중심, 독립 작업별 그룹화, as-is → to-be, 평이한 언어,
+4. **plan.md 인간용 정리 (의도 7)** — desc 를 쓰기 전에 먼저 한다. desc 의 소스이므로
+   순서가 뒤바뀌면 안 된다. `write-plan-md` 글쓰기 원칙으로 다듬는다:
+   - `## 계획` 의 완료 태스크는 결과 요약 1-2줄로 정돈, 시행착오 흔적 제거.
+   - 구조는 유지한다 (새 섹션 추가 · 태스크 재배치 금지). 표현만 다듬는다.
+5. **desc = 인간용 (의도 7)** — 방침 중심, 독립 작업별 그룹화, as-is → to-be, 평이한 언어,
    비관여자도 이해 가능, 남은 한계 명시. UI/UX 변경은 캡처 첨부.
-   plan.md `## 배경` · `## 계획` 을 소스로 재사용한다.
+   정리된 plan.md `## 배경` · `## 계획` 을 소스로 재사용한다.
 
 ## 테스트 변경 스캔 (change-detector 회피)
 
