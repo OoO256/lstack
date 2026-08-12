@@ -1,3 +1,16 @@
 {
-  "hooks": {}
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/nobs-reminder.sh\"",
+            "timeout": 2,
+            "async": false
+          }
+        ]
+      }
+    ]
+  }
 }
