@@ -11,7 +11,7 @@ lstack/
 ├── .claude-plugin/plugin.json   # 플러그인 매니페스트
 ├── agents/                       # 에이전트 정의 (.md) — harness-sage 만
 ├── skills/                       # 스킬 정의 (디렉토리/SKILL.md)
-├── hooks/hooks.json              # 비어 있음 (v2 hookless)
+├── hooks/hooks.json              # nobs-reminder 만
 ├── docs/
 │   ├── spec/                     # 분야별 SSOT (PRINCIPLE, ARCHITECTURE)
 │   └── worklogs/                 # 프로젝트 단위 작업 디렉토리 (plan.md)
@@ -39,6 +39,7 @@ lstack/
 | `compound` | `skills/compound/SKILL.md` | 세션 지시 회고 → 하니스 자동화 제안 (제안만, close 직전 자동) |
 | `close` | `skills/close/SKILL.md` | 완료 확인 + plan.md 인간용 정리 + worktree 닫기 |
 | `write-plan-md` | `skills/write-plan-md/SKILL.md` | plan.md 구조 SSOT (최소 구조) |
+| `nobs` | `skills/nobs/SKILL.md` | 사용자에게 말하는 방식 SSOT — 결론 먼저 · 신규 용어 금지 · 최대한 짧게 · 중요도 순. `nobs-reminder` 훅이 매 턴 압축본을 주입 |
 | `call-as-codex` | `skills/call-as-codex/SKILL.md` | on-demand Codex 위임 mechanics 래퍼 (bare) |
 
 ## Agents
@@ -52,7 +53,11 @@ lstack/
 
 ## Hooks
 
-없음. v2 는 hookless (`hooks/hooks.json` = `{}`).
+| Hook | 타입 | 동작 |
+|------|------|------|
+| nobs-reminder | UserPromptSubmit | 매 턴 nobs 응답 규칙 한 줄 주입. 스킬 호출은 모델 재량이라 "항상"이 보장되지 않아 훅으로 고정. 전문은 `skills/nobs/SKILL.md` |
+
+훅은 이것뿐이다. 워크플로우 게이트용 훅은 두지 않는다 (v2 방침).
 
 ## 서브에이전트 위임 (의도 2)
 
