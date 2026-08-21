@@ -3,8 +3,8 @@ name: pr
 description: |
   Use when the user says "/pr", "code 올려", "pr 올려", "pr 만들어" — creating a PR
   for the current work. Always asks draft vs ready, assigns the user, checks the user's
-  recent PRs to suggest a reviewer, polishes plan.md for outside readers, and writes
-  a human-readable description.
+  recent PRs to suggest a reviewer, writes handoff.md for outside readers, and derives
+  a human-readable description from it.
 ---
 
 # pr — code 올리기
@@ -17,13 +17,11 @@ description: |
    ```bash
    gh pr list --author @me --state all --limit 10 --json reviewRequests,reviews
    ```
-4. **plan.md 인간용 정리 (의도 7)** — desc 를 쓰기 전에 먼저 한다. desc 의 소스이므로
-   순서가 뒤바뀌면 안 된다. `write-plan-md` 글쓰기 원칙으로 다듬는다:
-   - `## 계획` 의 완료 태스크는 결과 요약 1-2줄로 정돈, 시행착오 흔적 제거.
-   - 구조는 유지한다 (새 섹션 추가 · 태스크 재배치 금지). 표현만 다듬는다.
+4. **handoff.md 작성 (의도 7)** — desc 를 쓰기 전에 먼저 한다. desc 의 소스이므로
+   순서가 뒤바뀌면 안 된다. `handoff` 스킬 구조·글쓰기 원칙으로 쓴다 (이미 있으면 갱신).
 5. **desc = 인간용 (의도 7)** — 방침 중심, 독립 작업별 그룹화, as-is → to-be, 평이한 언어,
    비관여자도 이해 가능, 남은 한계 명시. UI/UX 변경은 캡처 첨부.
-   정리된 plan.md `## 배경` · `## 계획` 을 소스로 재사용한다.
+   handoff.md 4섹션(배경 · 해결 방법 · 결과 · 한계와 후속)을 소스로 재사용한다.
 
 ## 테스트 변경 스캔 (change-detector 회피)
 
@@ -65,4 +63,4 @@ gh pr create --assignee @me --reviewer <선택> \
 ## 규칙
 
 - draft/ready · reviewer 는 **묻고** 정한다. 임의 결정 금지.
-- desc 에 "T1 에서 X, T2 에서 Y" 식 구현 나열 금지 — 방침 · 데이터 흐름 중심.
+- desc 에 "먼저 X 하고 그다음 Y" 식 작업 순서 나열 금지 — 방침 · 데이터 흐름 중심.

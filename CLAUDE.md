@@ -7,7 +7,7 @@ A Claude Code plugin for development workflow automation.
 모든 상세 문서는 `docs/spec/`에 있다. 필요할 때 참조.
 
 - [PRINCIPLE.md](docs/spec/PRINCIPLE.md) — 개발 의도 가이드 (8개 의도 + 라이프사이클 arc)
-- [ARCHITECTURE.md](docs/spec/ARCHITECTURE.md) — 플러그인 구조, skills, agents, hooks, 워크플로우, plan.md 구조
+- [ARCHITECTURE.md](docs/spec/ARCHITECTURE.md) — 플러그인 구조, skills, agents, hooks, 워크플로우, handoff.md 구조
 
 ## Docs Rules
 
@@ -15,7 +15,9 @@ A Claude Code plugin for development workflow automation.
 - 경로: `docs/worklogs/YYYY-MM-DD-<한일>/`
 - 세션에서 의미 있는 작업을 했으면 반드시 기록
 - 디렉토리 구성:
-  - `plan.md` — 단일 SOT. 배경(as-is→to-be), 계획(독립 작업 T1..Tn), 향후 과제. 구조는 `skills/write-plan-md/` SSOT
+  - `handoff.md` — 유일한 문서. 인계장(배경 · 해결 방법 · 결과 · 한계와 후속).
+    구조는 `skills/handoff/` SSOT
+- **계획 문서는 만들지 않는다** — 계획은 채팅에 인라인으로 제시한다
 
 ### spec (SSOT 문서)
 - 경로: `docs/spec/<TOPIC>.md` (예: `PRINCIPLE.md`, `ARCHITECTURE.md`)
