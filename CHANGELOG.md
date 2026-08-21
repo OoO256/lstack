@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Breaking
+
+- **plan.md 폐지 → handoff.md**: 계획 문서를 만들지 않는다. 계획은 채팅에 인라인으로 제시하고,
+  worklog 에는 인계장 `handoff.md` 하나만 남긴다 (배경 · 이해 방법 · 결과 · 남은 작업 · 인계 사항).
+  subagent 위임 전 · PR 전 · compact 전 · `/handoff` 호출 시 작성하며 매번 덮어쓴다.
+- **`write-plan-md` 스킬 → `handoff`**: 구조 SSOT 이면서 `/handoff` 로 직접 호출 가능.
+
 ### Added
 
 - **`pr` 테스트 변경 스캔**: push 전 diff 의 테스트 변경을 훑어 change-detector 테스트(깨져도

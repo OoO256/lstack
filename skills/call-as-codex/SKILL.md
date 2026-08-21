@@ -18,7 +18,7 @@ Codex 에 전달하고 결과를 그대로 반환한다. on-demand 로 다른 �
 
 | 파라미터 | 필수 | 설명 |
 |---------|------|------|
-| `context` | O | Codex 에 보낼 요청 본문 (질문 / 지시 / plan.md 경로 등) |
+| `context` | O | Codex 에 보낼 요청 본문 (질문 / 지시 / handoff.md 경로 등) |
 | `prompt_file` | X | 앞에 붙일 프롬프트 파일 참조 `<plugin>:<name>` → `${CLAUDE_PLUGIN_ROOT}/agents/<name>.md`. 없으면 context 만 전달 |
 | `write` | X | `true` → 파일 쓰기 권한. 기본 read-only |
 | `model` | X | Codex 모델. 기본 config.toml 값 |

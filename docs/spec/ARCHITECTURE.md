@@ -14,7 +14,7 @@ lstack/
 ├── hooks/hooks.json              # nobs-reminder 만
 ├── docs/
 │   ├── spec/                     # 분야별 SSOT (PRINCIPLE, ARCHITECTURE)
-│   └── worklogs/                 # 프로젝트 단위 작업 디렉토리 (plan.md)
+│   └── worklogs/                 # 프로젝트 단위 작업 디렉토리 (handoff.md)
 └── tests/
 ```
 
@@ -32,13 +32,13 @@ lstack/
 
 | 스킬 | 경로 | 역할 |
 |------|------|------|
-| `start` | `skills/start/SKILL.md` | 진입점. origin/main → worktree 새 브랜치 + 의도 인터뷰 + 가이드 로드 + 구조 판단(의도 8) + plan.md 착수. resume 자동 판별. 프로젝트 기본값 `skills/start/projects/<basename>.md` |
+| `start` | `skills/start/SKILL.md` | 진입점. origin/main → worktree 새 브랜치 + 의도 인터뷰 + 가이드 로드 + 구조 판단(의도 8) + 채팅 인라인 계획 제시. resume 자동 판별. 프로젝트 기본값 `skills/start/projects/<basename>.md` |
 | `show` | `skills/show/SKILL.md` | 동작 확인. ① 사용자 수동 테스트 / ② agent e2e 검증, Chrome CDP |
-| `pr` | `skills/pr/SKILL.md` | code 올리기. draft/ready 질문·본인 assign·이전 PR 기반 reviewer 질문·plan.md 인간용 정리→인간용 desc·테스트 변경 change-detector 스캔·구조 스캔(의도 8) |
+| `pr` | `skills/pr/SKILL.md` | code 올리기. draft/ready 질문·본인 assign·이전 PR 기반 reviewer 질문·handoff.md 작성→인간용 desc·테스트 변경 change-detector 스캔·구조 스캔(의도 8) |
 | `review` | `skills/review/SKILL.md` | 남의 PR 이해 돕기. 구조/데이터흐름 + 사용자입력→클라→백→영속화 리뷰 순서 |
 | `compound` | `skills/compound/SKILL.md` | 세션 지시 회고 → 하니스 자동화 제안 (제안만, close 직전 자동) |
 | `close` | `skills/close/SKILL.md` | 완료 확인 + worktree 닫기 |
-| `write-plan-md` | `skills/write-plan-md/SKILL.md` | plan.md 구조 SSOT (최소 구조) |
+| `handoff` | `skills/handoff/SKILL.md` | handoff.md 구조 SSOT + 작성 시점. `/handoff` 로 직접 호출 가능 |
 | `nobs` | `skills/nobs/SKILL.md` | 사용자에게 말하는 방식 SSOT — 결론 먼저 · 신규 용어 금지 · 최대한 짧게 · 중요도 순. `nobs-reminder` 훅이 매 턴 압축본을 주입 |
 | `call-as-codex` | `skills/call-as-codex/SKILL.md` | on-demand Codex 위임 mechanics 래퍼 (bare) |
 
@@ -64,12 +64,18 @@ lstack/
 독립 서브태스크는 더 싼 모델의 서브에이전트로 병렬 위임한다 (예: `general-purpose`(sonnet),
 `Explore`). 프로젝트에 설치된 전문 에이전트가 있으면 활용. 태스크당 1커밋 권장.
 
-## plan.md
+## handoff.md
 
-단일 SOT 이자 인간용 문서. 구조·글쓰기 규칙은 `skills/write-plan-md/` SSOT.
-최소 구조: `## 배경`(as-is → to-be) · `## 계획`(독립 작업 T1..Tn) · `## 향후 과제`(선택).
-구조 영향이 있는 작업은 선택적 `## 설계 › ### 구조`(이해 단위 → 모듈 매핑 + 기존 구조 적합성).
-상태머신·phase 매핑·AC 게이트 없음. 완료 마커 `✅`.
+worklog 의 유일한 문서. 다음 사람(사람 · subagent · compact 이후의 나)에게 넘기는 인계장.
+구조·글쓰기 규칙은 `skills/handoff/` SSOT.
+
+구조: `## 배경`(as-is → to-be) · `## 이해 방법`(중심 개념 · 데이터 흐름 · 이해 단위 → 모듈 매핑) ·
+`## 결과` · `## 남은 작업` · `## 인계 사항`.
+
+- **계획은 문서로 만들지 않는다** — 채팅에 인라인으로 제시한다.
+- 작성 시점: subagent 위임 전 · PR 전 · compact 전 · `/handoff` 호출.
+- 파일 하나, 매번 덮어쓴다. 시점에 따라 빈 섹션이 생기는 건 정상 ("없음" 한 줄).
+- 상태머신·phase 매핑·AC 게이트 없음.
 
 ## 스킬/프롬프트 작성 원칙 (하니스 자체를 수정할 때)
 
