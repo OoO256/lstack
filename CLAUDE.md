@@ -15,7 +15,7 @@ A Claude Code plugin for development workflow automation.
 - 경로: `docs/worklogs/YYYY-MM-DD-<한일>/`
 - 세션에서 의미 있는 작업을 했으면 반드시 기록
 - 디렉토리 구성:
-  - `handoff.md` — 유일한 문서. 인계장(배경 · 이해 방법 · 결과 · 남은 작업 · 인계 사항).
+  - `handoff.md` — 유일한 문서. 인계장(배경 · 해결 방법 · 결과 · 한계와 후속).
     구조는 `skills/handoff/` SSOT
 - **계획 문서는 만들지 않는다** — 계획은 채팅에 인라인으로 제시한다
 

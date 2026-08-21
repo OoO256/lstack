@@ -19,7 +19,7 @@ ls -1dt docs/worklogs/*/ 2>/dev/null | head -5
 ```
 
 - 발화가 "이어서 / 계속 / resume" 이거나 기존 worklog 를 지칭 → **resume**:
-  해당 `handoff.md` 를 읽고 결과 / 남은 작업 / 인계 사항을 채팅으로 요약 보고한 뒤 이어간다.
+  해당 `handoff.md` 를 읽고 결과 / 한계와 후속을 채팅으로 요약 보고한 뒤 이어간다.
   (아래 1~3 스킵)
 - 그 외 새 작업 → **new**: 1 로 진행.
 
