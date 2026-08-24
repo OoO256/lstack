@@ -7,7 +7,8 @@ lstack 로 작업할 때 항상 지키는 개발 의도. `start` 가 작업 시�
 
 ```
 /start → 구현 → self-test(unit·integ) → /show(①/②) → /pr → /compound(자동·제안만) → /close
-                                                              /review = 남의 PR 볼 때 아무 때나
+                                                              /explain = 남의 PR/코드 이해할 때 아무 때나
+                                                              /code-review = 적대적 리뷰 (자기·남 코드 모두)
 ```
 
 이 흐름은 **기본 arc 일 뿐 강제 게이트가 아니다.** 스킬은 "반복 명령 묶음"이고,

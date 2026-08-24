@@ -22,7 +22,8 @@ lstack/
 
 ```
 /start → 구현 → self-test(unit·integ) → /show(①/②) → /pr → /compound(자동·제안만) → /close
-                                                              /review = 남의 PR 볼 때 아무 때나
+                                                              /explain = 남의 PR/코드 이해할 때 아무 때나
+                                                              /code-review = 적대적 리뷰 (자기·남 코드 모두)
 ```
 
 스킬은 "반복 명령 묶음"이고, 중간 구현은 메인 컨텍스트가 `PRINCIPLE.md` 가이드를 지닌 채
@@ -35,7 +36,8 @@ lstack/
 | `start` | `skills/start/SKILL.md` | 진입점. origin/main → worktree 새 브랜치 + 의도 인터뷰 + 가이드 로드 + 구조 판단(의도 8) + 채팅 인라인 계획 제시. resume 자동 판별. 프로젝트 기본값 `skills/start/projects/<basename>.md` |
 | `show` | `skills/show/SKILL.md` | 동작 확인. ① 사용자 수동 테스트 / ② agent e2e 검증, Chrome CDP |
 | `pr` | `skills/pr/SKILL.md` | code 올리기. draft/ready 질문·본인 assign·이전 PR 기반 reviewer 질문·handoff.md 작성→인간용 desc·테스트 변경 change-detector 스캔·구조 스캔(의도 8) |
-| `review` | `skills/review/SKILL.md` | 남의 PR 이해 돕기. 구조/데이터흐름 + 사용자입력→클라→백→영속화 리뷰 순서 |
+| `explain` | `skills/explain/SKILL.md` | 남의 PR/코드 이해 돕기 (대화). 구조/데이터흐름 + 사용자입력→클라→백→영속화 리뷰 순서. 게이트 아님 |
+| `code-review` | `skills/code-review/SKILL.md` | 적대적 리뷰 루프. code-reviewer + security-reviewer 를 fresh context 로 병렬 spawn. 자기/남의 코드 모두 |
 | `compound` | `skills/compound/SKILL.md` | 세션 지시 회고 → 하니스 자동화 제안 (제안만, close 직전 자동) |
 | `close` | `skills/close/SKILL.md` | 완료 확인 + worktree 닫기 |
 | `handoff` | `skills/handoff/SKILL.md` | handoff.md 구조 SSOT + 작성 시점. `/handoff` 로 직접 호출 가능 |
@@ -47,6 +49,8 @@ lstack/
 | Agent | 경로 | 역할 |
 |-------|------|------|
 | harness-sage | `agents/harness-sage.md` | compound 가 수락된 개선을 구현할 때만. worktree 격리 후 issue/PR 생성 |
+| code-reviewer | `agents/code-reviewer.md` | 적대적 코드 리뷰 (명세·로직·품질). Write/Edit 금지. `code-review` 스킬이 spawn 또는 직접 호출 |
+| security-reviewer | `agents/security-reviewer.md` | OWASP·시크릿·의존성 감사. Write/Edit 금지. `code-review` 스킬이 spawn 또는 직접 호출 |
 
 **레이어 분리:** `call-as-codex`(skill) = Codex 호출 mechanics (프롬프트 내용 모름) ·
 `agents/<name>.md` = 프롬프트 파일 (호출 방식 모름). 호출자가 둘을 조합.

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 3.1.0 - 2026-08-24
 
 ### Breaking
 
@@ -9,12 +9,17 @@
   배경(문제 · 원인) · 해결 방법(as-is → to-be · 설계) · 결과(결정 · 검증) · 한계와 후속.
   subagent 위임 전 · PR 전 · compact 전 · `/handoff` 호출 시 작성하며 매번 덮어쓴다.
 - **`write-plan-md` 스킬 → `handoff`**: 구조 SSOT 이면서 `/handoff` 로 직접 호출 가능.
+- **`review` 스킬 → `explain`**: 남의 PR/코드를 대화로 이해하는 용도. `/code-review` 와 목적 분리.
 
 ### Added
 
 - **`pr` 테스트 변경 스캔**: push 전 diff 의 테스트 변경을 훑어 change-detector 테스트(깨져도
   버그가 아닌 테스트)를 플래그한다. 판별 기준·범주·grep 힌트는 `skills/pr/change-detector-tests.md`,
   저작 시점 원칙은 PRINCIPLE 의도 3.
+- **`code-review` 스킬 + `code-reviewer`/`security-reviewer` 에이전트**: 두 리뷰어를 fresh
+  subagent 로 병렬 spawn — 구현자(메인) ≠ 리뷰어 컨텍스트 분리로 blind spot 공유 방지.
+  블로커 있으면 재-spawn 루프(기본 1회). 대상: worktree diff · PR 번호/URL · 파일 경로.
+  두 에이전트는 스킬을 거치지 않고 직접 호출도 가능.
 
 ## 3.0.0 - 2026-07-14
 
