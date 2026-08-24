@@ -1,18 +1,18 @@
 ---
-name: review
+name: explain
 description: |
-  Use when the user says "/review", "이 PR 리뷰 도와줘", or gives someone else's PR
-  (URL/number) to understand. Explains the PR conversationally so the user understands it,
-  then proposes a review order following user input → client → backend → persistence.
+  Use when the user says "/explain", "이 PR 설명해줘", "이거 뭐하는 코드야", or gives someone
+  else's PR (URL/number) 또는 낯선 코드를 이해하려 할 때. 대화로 이해를 돕는다 —
+  적대적 검증이 아니다 (그건 `/code-review`).
 ---
 
-# review — 남의 PR 이해 돕기
+# explain — 남의 PR/코드 이해 돕기
 
-다른 사람의 PR 을 **내가 이해하도록** 대화로 돕는다. 승인 게이트가 아니다 —
+다른 사람의 PR 이나 낯선 코드를 **내가 이해하도록** 대화로 돕는다. 승인 게이트가 아니다 —
 이해와 리뷰 순서 안내가 목적. 모든 설명은 **채팅 안에서** 한다 (파일로 넘기지 않는다).
 
 ## 1. 전체 구조 as-is → to-be
-이 PR 이 무엇을 바꾸는지 한눈에. 바뀌기 전 / 후 상태 대비.
+이 변경이 무엇을 바꾸는지 한눈에. 바뀌기 전 / 후 상태 대비.
 
 ## 2. 구조 그리기
 - backend → **데이터 흐름**: 입력이 어떻게 저장(영속화)까지 흘러가는지.
@@ -25,3 +25,4 @@ description: |
 
 ## 입력
 PR URL / 번호. diff 는 `gh pr diff <n>`, 설명은 `gh pr view <n>` 로 읽는다.
+파일 경로도 가능.
