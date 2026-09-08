@@ -3,7 +3,7 @@ name: explain
 description: |
   Use when the user says "/explain", "이 PR 설명해줘", "이거 뭐하는 코드야", or gives someone
   else's PR (URL/number) 또는 낯선 코드를 이해하려 할 때. 대화로 이해를 돕는다 —
-  적대적 검증이 아니다 (그건 `/code-review`).
+  적대적 검증이 아니다 (그건 `/reviewer`).
 ---
 
 # explain — 남의 PR/코드 이해 돕기

@@ -51,6 +51,9 @@ diff 가 테스트를 건드리면 push 전에 change-detector 테스트를 훑�
 `align`에서 합의한 동작·수정 범위와 현재 변경을 비교한다. 아직 합의하지 않은 변경이
 있으면 해당 부분을 먼저 맞춘다. 사전 합의가 없었다면 지금의 설명을 과거 합의로 기록하지 않는다.
 구현 후 코드·구조·보안 리뷰와 최종 코드 검증 결과를 확인한다.
+여러 피드백을 반영한 작업이면 요청 항목마다 실제 변경과 확인 근거를 대조한다.
+일부만 끝났으면 완료한 항목과 남긴 항목·이유를 나눠 보고한다. 남은 요구를 임의로
+후속 작업에 넣고 전체 반영이 끝난 것처럼 보고하지 않는다.
 
 push 전에 **기계가 판정하는 것부터** 돌린다. 눈으로 훑는 스캔은 "괜찮아 보인다" 로 끝나서
 같은 지적이 리뷰에서 반복된다.
@@ -58,7 +61,7 @@ push 전에 **기계가 판정하는 것부터** 돌린다. 눈으로 훑는 스
 1. .lstack.json opt-in 프로젝트는 설정한 lint 명령과 실제 fresh 구조 diff 검토를 확인한다:
 
    ```bash
-   node "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/verify-completion.mjs" check
+   node "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/check-lint-and-review.mjs" check
    ```
 
    검사 대상은 /start에서 register한 worktree다. LSTACK_SESSION_ID가 없으면 SessionStart
@@ -70,10 +73,12 @@ push 전에 **기계가 판정하는 것부터** 돌린다. 눈으로 훑는 스
    검사 범위는 수정 권한이 아니다. 기존 부채 보고를 신규 위반 차단과 구분하고, 검사 시스템
    도입만 승인됐다면 기존 서비스 코드·제품 테스트를 수정하지 않는다. 검사 명령·적용 범위의
    오류는 검사 시스템에서 고치고, 범위 밖 문제는 미해결로 보고한다.
+   설정 작성은 [프로젝트 설정](../../hooks/project-config.md), 실행 결과와 오류 해석은
+   [lint·리뷰 확인](../../hooks/lint-and-review.md)을 읽는다.
 2. 변경 목록과 **새 이름 후보**를 확인한다:
 
    ```bash
-   node "${CLAUDE_PLUGIN_ROOT}/skills/code-review/concept-budget.mjs" "<base_branch>"
+   node "${CLAUDE_PLUGIN_ROOT}/skills/reviewer/scripts/collect-review-changes.mjs" "<base_branch>"
    ```
 
    표는 `/align`에서 합의한 책임·소유 관계와 비교할 후보 목록이다. 숫자 자체로 실패시키거나
@@ -81,7 +86,7 @@ push 전에 **기계가 판정하는 것부터** 돌린다. 눈으로 훑는 스
    예상과 다른 책임·공개 계약·모듈 경계는 독립 reviewer가 실제 소비자로 확인한다.
    사용자 목표나 합의 범위를 바꾸는 선택만 사용자에게 확인한다.
 
-`/code-review`가 세 reviewer를 fresh context로 실행한다. opt-in 프로젝트의 구조 diff 검토는
+`/reviewer`가 세 reviewer를 fresh context로 실행한다. opt-in 프로젝트의 구조 diff 검토는
 선택 사항이 아니다. 설계 검토는 현재 코드의 diff 검토를 대신하지 않는다.
 
 ## 생성

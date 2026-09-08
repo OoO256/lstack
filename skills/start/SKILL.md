@@ -47,11 +47,12 @@ SessionStart는 worktree 생성 전에 실행된다. shell의 `cd`가 hook.cwd�
 않는다. **구현 전에** 실제 검사 대상을 명시적으로 등록한다:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/verify-completion.mjs" register "<worktree 절대경로>"
+node "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/check-lint-and-review.mjs" register "<worktree 절대경로>"
 ```
 
 SessionStart가 CLAUDE_ENV_FILE에 저장한 LSTACK_SESSION_ID를 사용한다. 누락·실행 오류는
-통과로 취급하지 않는다. .lstack.json opt-in과 검사 계약은 ARCHITECTURE.md의 Hooks를 따른다.
+통과로 취급하지 않는다. 검사 도입·설정 시 [프로젝트 설정](../../hooks/project-config.md)을,
+등록·검사 오류가 나면 [lint·리뷰 확인](../../hooks/lint-and-review.md)을 읽는다.
 
 ## 2. 인터뷰
 
@@ -131,7 +132,7 @@ Agent(subagent_type="lstack:structure-reviewer",
 독립 작업은 성격에 맞는 비용·능력의 서브에이전트에 위임할 수 있다. 사용자가 직접 작성을
 요구한 범위는 위임하지 않는다. 인계가 필요하면 `handoff`로 합의와 이해도 판단 이유를 짧게 남긴다.
 
-구현 후 `code-review`로 코드·구조·보안을 검토하고, 수정까지 반영한 최종 코드에 대해
+구현 후 `reviewer`로 코드·구조·보안을 검토하고, 수정까지 반영한 최종 코드에 대해
 lint·unit·통합 검사 등 변경 위험에 맞는 검증을 한다. 구현 중 빠른 검사는 막지 않는다.
 UI 변경은 `show`로 실제 동작을 확인한다. 문서만 바뀌면 관련 없는 브라우저 검증을 하지 않는다.
 리뷰·검증 후 `pr` → `compound` → `close`로 이어간다. 사전 설계 리뷰가 구현 후 리뷰를 대신하지 않는다.

@@ -7,8 +7,8 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
 const plugin = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const hook = join(plugin, "hooks/scripts/verify-completion.mjs");
-const collector = join(plugin, "skills/code-review/concept-budget.mjs");
+const hook = join(plugin, "hooks/scripts/check-lint-and-review.mjs");
+const collector = join(plugin, "skills/reviewer/scripts/collect-review-changes.mjs");
 const resultPrefix = "LSTACK_STRUCTURE_REVIEW ";
 
 function run(command, args, options = {}) {

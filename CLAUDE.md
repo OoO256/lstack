@@ -7,7 +7,7 @@ A Claude Code plugin for development workflow automation.
 전체 구조는 `docs/spec/`에서 찾고, 실행 절차와 작성 원칙은 해당 스킬에서 읽는다.
 
 - [ARCHITECTURE.md](docs/spec/ARCHITECTURE.md) — 전체 작업 흐름과 구성요소의 책임·연결
-- 설계는 `skills/start/`, 사용자 이해·합의는 `skills/align/`, 구현 후 검토는 `skills/code-review/`가 담당한다.
+- 설계는 `skills/start/`, 사용자 이해·합의는 `skills/align/`, 구현 후 검토는 `skills/reviewer/`가 담당한다.
 
 ## Docs Rules
 

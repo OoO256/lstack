@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// 변경 목록과 새 이름 후보를 수집한다. 사용처 수는 판정이 아니다.
+// 변경 목록·새 이름 후보를 출력하고 hook에 변경 snapshot을 제공한다. 숫자로 품질을 판정하지 않는다.
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { lstatSync, readFileSync, readlinkSync, realpathSync } from "node:fs";

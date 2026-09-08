@@ -1,7 +1,7 @@
 # 코드 작성 원칙
 
 `start`에서 설계·구현할 때 읽는다. 구조를 어떻게 조사하고 합의할지는 `start`와 `align`이,
-구현된 코드의 독립 검토는 `code-review`와 각 reviewer가 담당한다.
+구현된 코드의 독립 검토는 `reviewer`와 각 reviewer가 담당한다.
 
 ## 이름과 타입
 
