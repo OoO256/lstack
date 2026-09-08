@@ -20,6 +20,9 @@ description: |
   (`skills/start/projects/<cwd-basename>.md`). 없으면 사용자에게 한 번 질문.
 - Chrome 은 항상 **CDP** 로 띄운다 (chrome-devtools-mcp / chrome CDP).
 - ② 는 사용자 입력 → 반영까지의 핵심 경로를 실제로 태워 확인하고, 결과를 근거와 함께 보고한다.
+- **UI 변경이면 as-is(base 상태) · to-be(현재 브랜치) 캡처를 한 장씩 남긴다.** gitignore 된
+  레포 내 경로에 저장하고 `/pr` 이 그대로 첨부한다 (`skills/pr/screenshots.md`). as-is 는
+  고치고 난 뒤엔 다시 찍기 어렵다 — 여기서 안 남기면 `/pr` 에서 stash 로 되돌려야 한다.
 
 ## 정리 (확인 종료 시 반드시)
 

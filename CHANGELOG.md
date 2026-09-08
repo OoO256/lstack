@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **`pr` PR 스크린샷 첨부**: UI 변경의 as-is/to-be 캡처를 GitHub 첨부 CDN(`user-attachments`)에
+  올리고 본문에는 URL 만 넣는다 — 이미지가 레포에 쌓이지 않는다. 업로드 API 가 없어 로그인된
+  Playwright 프로필의 코멘트 박스로 올린 뒤(제출하지 않는다) 삽입된 URL 만 회수한다.
+  절차는 `skills/pr/screenshots.md`. `show` 는 as-is 캡처를 미리 남기도록 한 줄 추가.
+
 ## 3.1.0 - 2026-08-24
 
 ### Breaking
