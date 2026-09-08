@@ -3,14 +3,15 @@ name: start
 description: |
   Use when the user says "/start", "/lstack", "시작", "이거 만들어", "이거 고쳐",
   "이어서", "계속", "resume", or gives a task needing planning and multi-step work.
-  Sets up an isolated worktree, clarifies intent by interview, loads the dev guide,
-  and presents the plan in chat. Auto-detects fresh start vs resume.
+  Sets up an isolated worktree, clarifies intent, prepares a design, and hands it to
+  align for understanding and agreement before implementation. Auto-detects fresh start vs resume.
 ---
 
-# start — 작업 시작 (격리 + 인터뷰 + 계획 제시)
+# start — 작업 시작 (격리 + 인터뷰 + 설계)
 
-내가 매번 치는 시작 명령(worktree 격리 · 의도 인터뷰 · 계획 제시)을 대신 발동한다.
-작업 방식은 `docs/spec/PRINCIPLE.md`(개발 가이드)를 따른다 — 이 스킬이 그 파일을 로드한다.
+worktree를 격리하고 사용자 의도와 기존 코드를 바탕으로 설계안을 준비한다.
+설계안을 보여준 것으로 구현 승인을 대신하지 않는다. 설명·이해도 확인·합의는 `align`이 맡는다.
+질문·설명·리뷰만 요청했다면 읽기 전용으로 답하고 여기서 끝낸다. 아래 작업 준비는 구현 요청에만 적용한다.
 
 ## 0. resume vs new 판별
 
@@ -21,12 +22,13 @@ ls -1dt docs/worklogs/*/ 2>/dev/null | head -5
 - 발화가 "이어서 / 계속 / resume" 이거나 기존 worklog 를 지칭 → **resume**:
   해당 `handoff.md` 를 읽고 결과 / 한계와 후속을 채팅으로 요약 보고한 뒤 이어간다.
   해당 worktree를 아래 register 명령으로 등록하고 이어간다. 같은 tree 재등록은 검사 기준을
-  덮어쓰지 않는다. 이미 합의한 1~3은 반복하지 않는다.
+  덮어쓰지 않는다. 같은 설계에 대해 이미 이해하고 합의한 부분은 반복하지 않는다.
+  바뀐 부분이나 아직 이해·합의하지 않은 설계는 `align`으로 넘긴다. 없는 합의를 만들어내지 않는다.
 - 그 외 새 작업 → **new**: 1 로 진행.
 
-## 1. 격리 (new work, 의도 4)
+## 1. 격리 (new work)
 
-origin/main 에서 worktree 새 브랜치를 만든다.
+origin/main에서 worktree 새 브랜치를 만든다. 기존 작업과 사용자 변경은 보존한다.
 
 - 프로젝트 기본값: `skills/start/projects/<cwd-basename>.md` frontmatter
   (`base_branch` 기본 `main`, `branch_prefix`, `worktree_root` 기본 `.worktrees`). 없으면 기본값.
@@ -51,17 +53,19 @@ node "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/verify-completion.mjs" register "<work
 SessionStart가 CLAUDE_ENV_FILE에 저장한 LSTACK_SESSION_ID를 사용한다. 누락·실행 오류는
 통과로 취급하지 않는다. .lstack.json opt-in과 검사 계약은 ARCHITECTURE.md의 Hooks를 따른다.
 
-## 2. 인터뷰 (의도 5)
+## 2. 인터뷰
 
-구현 전, **불명확한 의도만** 채팅으로 질문한다: goal · 동기 · 성공 기준 · non-goals.
-명확하면 생략. (파일로 넘기지 않는다 — 대화 안에서.)
+질문과 구현 요청을 구분한다. 질문에는 조사·설명으로 답하고 구현을 시작하지 않는다.
+구현 요청이면 **불명확한 의도만** 채팅으로 질문한다: goal · 동기 · 성공 기준 · non-goals.
+명확하면 인터뷰는 생략하되, 설계의 이해와 합의까지 끝났다고 간주하지 않는다.
 
-## 3. 구조 설계 (의도 8)
+## 3. 구조 설계
 
-가이드를 로드하고(`docs/spec/PRINCIPLE.md`) **코드보다 먼저** 구조를 정한다.
+[코드 작성 원칙](references/coding-conventions.md)을 읽고 **코드보다 먼저** 구조를 정한다.
 큰 책임·경계 변경을 구현 전에 검토하면 후속 수정 범위를 줄일 수 있다.
 
-3.1 · 3.2 의 산출물이 그대로 handoff.md 의 `## 배경` · `## 해결 방법` 이 된다. 따로 쓰는 일이 아니다.
+3.1 · 3.2의 산출물을 `align`에서 설명하고 보완한다. 합의된 내용이 handoff.md의
+`## 배경` · `## 해결 방법`이 되므로 별도 계획 문서는 만들지 않는다.
 
 ### 3.1 as-is — 기존 개념 트리 · 지금 동작하는 방식 · 문제의 원인
 
@@ -107,23 +111,29 @@ Agent(subagent_type="lstack:structure-reviewer",
 
 ### 3.4 작업 단위로 쪼갠다
 
-서로 독립인 단위로 (의도 1). 선행 리팩토링이 있으면 첫 단위.
+서로 독립인 작업만 나눈다. 독립 작업이 없으면 억지로 분해하지 않는다.
+선행 리팩토링이 필요하고 승인된 범위라면 첫 작업에 둔다.
 검사 범위가 넓더라도 수정할 파일은 사용자가 승인한 작업에 한정한다. 점진 lint의 기존
 부채나 report 결과를 작업 단위로 추가하지 않는다.
 
-### 3.5 계획 제시
+## 4. 사용자와 이해·범위를 맞춘다
 
-**채팅에 인라인**으로 3.1 → 3.2 → 3.3 → 3.4 순서로 제시한다. 큰 구조 변경의 선택이
-아직 합의되지 않았으면 구체적인 변경안을 두고 확인한다. 이미 승인한 범위는 계속 구현한다.
-**문서로 만들지 않는다.**
+설계안과 사전 리뷰 결과를 가지고 [align](../align/SKILL.md)을 실행한다.
+사용자가 현재/변경 후 동작과 문제 추적 방법을 이해하는지 실제 답변으로 확인한다.
+이해도 판단·보완·합의의 기준은 `align`이 소유한다. 그 완료 조건을 충족한 뒤 구현한다.
 
-## 4. 구현 중
+## 5. 구현·리뷰·검증
 
 책임·공개 계약·모듈 경계가 추가로 바뀌면 변경안을 갱신하고 구현 전에 독립 검토한다.
-새 파일·타입·export가 생겼다는 이유만으로 중단하지 않는다. 사용자 목표·합의 범위를
-바꾸는 선택만 사용자에게 확인한다. 설계 검토가 완료 후 현재 diff 검토를 대신하지 않는다.
+합의에 없던 책임·동작·범위는 `align`에서 해당 부분만 다시 맞춘다. 새 파일이 생겼다는
+이유만으로 중단하거나, 합의 범위 안의 루틴 수정마다 재승인을 요구하지 않는다.
 
-분해 · 병렬 · 저가 서브에이전트 위임(의도 1·2)은 판단으로.
-subagent 에 맥락을 넘겨야 하면 그때 `handoff` 스킬로 worklog 를 만든다 —
-합의한 트리는 `## 해결 방법` 에 적어 compact 이후에도 남게 한다.
-이후 arc: 구현 → self-test(lint·unit·integ) → `/show` → `/pr` → `/compound` → `/close`.
+독립 작업은 성격에 맞는 비용·능력의 서브에이전트에 위임할 수 있다. 사용자가 직접 작성을
+요구한 범위는 위임하지 않는다. 인계가 필요하면 `handoff`로 합의와 이해도 판단 이유를 짧게 남긴다.
+
+구현 후 `code-review`로 코드·구조·보안을 검토하고, 수정까지 반영한 최종 코드에 대해
+lint·unit·통합 검사 등 변경 위험에 맞는 검증을 한다. 구현 중 빠른 검사는 막지 않는다.
+UI 변경은 `show`로 실제 동작을 확인한다. 문서만 바뀌면 관련 없는 브라우저 검증을 하지 않는다.
+리뷰·검증 후 `pr` → `compound` → `close`로 이어간다. 사전 설계 리뷰가 구현 후 리뷰를 대신하지 않는다.
+사용자는 푸시된 코드로 검토한다. 승인된 수정 단위는 검증 후 `pr`의 수정 후 푸시 절차로
+커밋·푸시하고 확인할 링크를 전달한다. 로컬 수정만 마친 상태로 작업 완료를 보고하지 않는다.

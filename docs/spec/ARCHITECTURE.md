@@ -1,21 +1,27 @@
 # Architecture
 
-lstack는 작업 시작·리뷰·PR 스킬, 독립 reviewer, 명시적으로 설정한 프로젝트의 완료 hook로
-구성한다. 상세 판단 기준은 PRINCIPLE.md와 해당 reviewer가 소유한다.
+lstack는 작업 시작·사용자와의 이해 및 합의·리뷰·PR 스킬, 독립 reviewer,
+명시적으로 설정한 프로젝트의 검사 hook로 구성한다. 각 단계의 절차와 작성 원칙은
+해당 스킬이, 독립 검토의 판단 기준은 해당 reviewer가 소유한다.
 
 ## 구조와 흐름
 
 ```text
-/start → 구현 → self-test → /show → /pr → /compound → /close
-         ↓                      ↓
-         Stop 검사              check CLI
-         ├─ 프로젝트 lint 명령 실행
-         └─ 실제 fresh 구조 diff 검토 확인
+/start: 격리 → 인터뷰 → 설계 (필요 시 사전 structure-reviewer)
+  → /align: 현재·변경 후 구조와 문제 추적 이해 → 구현 범위 합의
+  → 구현 → /code-review: 코드·구조·보안 리뷰
+  → 최종 코드 검증 (UI 변경은 /show) → /pr → /compound → /close
 ```
+
+`start`는 설계안을 준비하고 `align`은 사용자의 이해와 진행 의사를 확인한다.
+구현 중 합의에 없던 책임·동작·범위가 필요해지면 그 부분을 다시 맞춘다.
+사전 구조 리뷰는 설계의 타당성을, 구현 후 리뷰는 실제 코드와 합의한 요구의 일치를 확인한다.
+구현 중 빠른 검사는 가능하며, 리뷰로 고친 최종 코드를 검증한 뒤 PR을 작성한다.
 
 | 구성 | 위치 | 책임 |
 |---|---|---|
 | start | skills/start/SKILL.md | worktree 격리·등록, 기존 개념·동작·원인 → 변경안, 구조 영향 시 구현 전 검토 |
+| align | skills/align/SKILL.md | 사용자와 현재·변경 후 동작 및 버그 추적 방법을 이해하고 구현 의도·범위를 합의 |
 | code-review | skills/code-review/SKILL.md | code/security/structure reviewer를 fresh context로 병렬 실행 |
 | structure-reviewer | agents/structure-reviewer.md | 책임·소유·공개 계약·이름·SSOT의 의미적 판단 |
 | 변경 수집 | skills/code-review/concept-budget.mjs | git 변경·새 이름·사용처 후보 수집, 검사 snapshot 계산 |
@@ -28,6 +34,10 @@ lstack는 작업 시작·리뷰·PR 스킬, 독립 reviewer, 명시적으로 설
 | nobs | skills/nobs/SKILL.md | 사용자에게 짧고 평이하게 말하는 규칙 |
 | explain | skills/explain/SKILL.md | 코드/PR 이해를 돕는 대화 |
 | call-as-codex | skills/call-as-codex/SKILL.md | Codex 호출 mechanics. 실패를 그대로 전달 |
+
+코드 작성 원칙은 start의 [참고 문서](../../skills/start/references/coding-conventions.md),
+행동 테스트 판별은 pr의 [테스트 기준](../../skills/pr/change-detector-tests.md),
+문서 작성은 handoff·pr, 사용자와의 설명 방식은 nobs·align이 담당한다.
 
 code-reviewer는 기능·로직·품질, security-reviewer는 보안을 읽기 전용으로 검토한다.
 structure-reviewer의 설계 검토와 diff 검토는 서로 대체하지 않는다. 별개 객체의 종류·소유·

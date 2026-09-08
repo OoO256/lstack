@@ -1,15 +1,27 @@
 ---
 name: pr
 description: |
-  Use when the user says "/pr", "code 올려", "pr 올려", "pr 만들어" — creating a PR
-  for the current work. Always asks draft vs ready, assigns the user, checks the user's
-  recent PRs to suggest a reviewer, writes handoff.md for outside readers, and derives
-  a human-readable description from it.
+  Use when the user says "/pr", "푸시", "code 올려", "pr 올려", "pr 만들어", or an approved
+  change is verified and ready to share. Commit and push reviewed changes to the work branch.
+  Preserve an existing PR's settings; when creating one, ask unresolved draft/ready and reviewer
+  choices, assign the user, and derive its description from handoff.md.
 ---
 
 # pr — code 올리기
 
-내가 매번 치는 PR 명령을 대신 발동한다. 아래는 반드시 지킨다:
+사용자는 푸시된 코드로 검토한다. 수정 후에는 아래 절차로 기존 PR을 갱신하거나 새로 만든다.
+
+## 수정 후 푸시
+
+- 사용자의 "앞으로 수정 후 항상 푸시" 지시에 따라, 승인된 수정 단위를 검증한 뒤 해당
+  작업 브랜치에 커밋·푸시한다. 매번 별도 푸시 요청이나 커밋 허락을 다시 기다리지 않는다.
+  사용자가 특정 작업의 커밋·푸시를 보류하라고 하면 그 지시를 우선한다.
+- 정확한 원격·브랜치와 변경 파일을 확인하고 승인된 작업만 커밋한다. 기존 PR이 있으면
+  같은 브랜치에 푸시하며 draft/ready·assignee·reviewer 선택을 유지한다.
+- 원격 변경과 충돌하거나 푸시에 실패하면 원인을 보고한다. 강제 푸시·머지·기본 브랜치에
+  직접 푸시는 별도 허락 없이 하지 않는다. 푸시 성공과 원격 반영을 확인한 뒤 PR·커밋 링크를 전달한다.
+
+새 PR을 만들 때는 아래를 지킨다. 기존 PR과 이미 확정한 선택은 재질문하지 않는다:
 
 1. **draft or ready?** — 꼭 질문한다 (기본값 가정 금지).
 2. **본인 assign 필수** — PR author 를 assignee 로 등록.
@@ -17,9 +29,9 @@ description: |
    ```bash
    gh pr list --author @me --state all --limit 10 --json reviewRequests,reviews
    ```
-4. **handoff.md 작성 (의도 7)** — desc 를 쓰기 전에 먼저 한다. desc 의 소스이므로
+4. **handoff.md 작성** — desc 를 쓰기 전에 먼저 한다. desc 의 소스이므로
    순서가 뒤바뀌면 안 된다. `handoff` 스킬 구조·글쓰기 원칙으로 쓴다 (이미 있으면 갱신).
-5. **desc = 인간용 (의도 7)** — 방침 중심, 독립 작업별 그룹화, as-is → to-be, 평이한 언어,
+5. **desc = 인간용** — 방침 중심, 독립 작업별 그룹화, as-is → to-be, 평이한 언어,
    비관여자도 이해 가능, 남은 한계 명시.
    handoff.md 4섹션(배경 · 해결 방법 · 결과 · 한계와 후속)을 소스로 재사용한다.
 6. **UI 변경이면 as-is/to-be 캡처 첨부** — [PR 스크린샷 첨부](./screenshots.md) 절차로
@@ -34,7 +46,11 @@ diff 가 테스트를 건드리면 push 전에 change-detector 테스트를 훑�
 - 후보를 근거와 함께 채팅에 제시하고 제거·수정 여부를 **묻는다**. 임의 삭제 금지.
 - 최종 판정은 맥락 판단이다 — 애매하면 KEEP.
 
-## 게이트 (의도 8)
+## PR 게시 전 검사
+
+`align`에서 합의한 동작·수정 범위와 현재 변경을 비교한다. 아직 합의하지 않은 변경이
+있으면 해당 부분을 먼저 맞춘다. 사전 합의가 없었다면 지금의 설명을 과거 합의로 기록하지 않는다.
+구현 후 코드·구조·보안 리뷰와 최종 코드 검증 결과를 확인한다.
 
 push 전에 **기계가 판정하는 것부터** 돌린다. 눈으로 훑는 스캔은 "괜찮아 보인다" 로 끝나서
 같은 지적이 리뷰에서 반복된다.
@@ -60,7 +76,7 @@ push 전에 **기계가 판정하는 것부터** 돌린다. 눈으로 훑는 스
    node "${CLAUDE_PLUGIN_ROOT}/skills/code-review/concept-budget.mjs" "<base_branch>"
    ```
 
-   표는 `/start`에서 합의한 책임·소유 관계와 비교할 후보 목록이다. 숫자 자체로 실패시키거나
+   표는 `/align`에서 합의한 책임·소유 관계와 비교할 후보 목록이다. 숫자 자체로 실패시키거나
    새 이름마다 사용자 승인을 요구하지 않는다. 삭제·개명·기존 선언 변경·untracked도 읽는다.
    예상과 다른 책임·공개 계약·모듈 경계는 독립 reviewer가 실제 소비자로 확인한다.
    사용자 목표나 합의 범위를 바꾸는 선택만 사용자에게 확인한다.
@@ -85,9 +101,10 @@ gh pr create --assignee @me --reviewer <선택> \
   사후 수정이 필요하면 `gh api` 로 patch.
 - 생성 후 PR URL 을 보고한다.
 - 리베이스·충돌 해결로 코드가 바뀌면 push 전에 현재 변경을 다시 검사한다.
-- 커밋은 사용자 허락을 받은 경우에만 한다. PR 요청으로 기존 세션의 커밋 허락을 추정하지 않는다.
+- 수정 후 커밋·푸시 권한은 위의 사용자 지시에 따른다. `align` 합의나 이 권한이
+  수정 범위 확대·임의의 외부 대상 게시·강제 푸시·머지 허락을 뜻하지는 않는다.
 
 ## 규칙
 
-- draft/ready · reviewer 는 **묻고** 정한다. 임의 결정 금지.
+- 새 PR의 미확정 draft/ready · reviewer는 **묻고** 정한다. 기존 선택은 임의로 바꾸지 않는다.
 - desc 에 "먼저 X 하고 그다음 Y" 식 작업 순서 나열 금지 — 방침 · 데이터 흐름 중심.
