@@ -1,5 +1,8 @@
 {
   "name": "lstack",
-  "version": "3.1.0",
-  "type": "module"
+  "version": "3.2.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  }
 }

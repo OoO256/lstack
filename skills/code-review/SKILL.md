@@ -1,89 +1,71 @@
 ---
 name: code-review
 description: |
-  Use when the user says "/code-review", "코드리뷰 해줘", "적대적 리뷰", or before /pr 로 hardening 하고 싶을 때.
-  두 리뷰어(code-reviewer + security-reviewer)를 **fresh context** 로 병렬 spawn — 구현자(메인)와
-  분리해서 blind spot 공유를 막는다. 블로커 있으면 메인이 수정 후 재-spawn 루프 (기본 1회).
-  대상: 인자 없음 = 현재 worktree diff · PR 번호/URL · 파일 경로 모두 가능. 남의 PR 도 리뷰 가능.
+  Use when the user says "/code-review", "코드리뷰 해줘", "적대적 리뷰", or before /pr.
+  code-reviewer + security-reviewer + structure-reviewer를 구현자와 분리한 fresh context로
+  병렬 spawn한다. 현재 worktree·PR·경로를 검토하고 승인된 구현의 blocker를 고친다.
 ---
 
-# code-review — adversarial 리뷰 루프
+# code-review — 독립 검토
 
-**핵심:** 구현자 컨텍스트 ≠ 리뷰어 컨텍스트. 같은 컨텍스트에서 생성/검증하면 blind spot 이 공유된다. `Agent` 툴로 fresh subagent 를 spawn 하는 것이 분리의 실체.
+구현자와 리뷰어는 별도 context여야 한다. 새 Agent를 실행하며 기존 구현자나 reviewer를
+resume해서 fresh 검토로 기록하지 않는다.
 
-기존 `/review` 는 남의 PR 을 **이해**하기 위한 대화. 이 스킬은 **적대적 검증** 게이트. 목적이 다르다.
+## 대상과 입력
 
-## 1. 대상 결정
+- 인자 없음: 현재 worktree에서 base 대비 커밋·staged·unstaged·untracked 변경 전체.
+- PR 번호/URL: 해당 PR의 base와 head를 읽는다. 필요하면 별도 worktree에 checkout한다.
+- 경로: 해당 코드와 실제 소비자를 읽는다. 경로 일부만 검토한 결과는 프로젝트 전체
+  완료 증거로 쓰지 않는다.
 
-인자 파싱:
-| 인자 | 동작 |
-|------|------|
-| 없음 | `git diff origin/main...HEAD` (현재 worktree) |
-| PR 번호 (`123`) 또는 URL | `gh pr diff <n>`. 필요 시 별도 worktree 에 `gh pr checkout` (현재 worktree 오염 금지) |
-| 파일/디렉토리 경로 | 해당 경로 |
+base는 .lstack.json을 우선하고 프로젝트 기본값, origin/main 순으로 정한다.
 
-diff 가 빈 문자열이면 "리뷰할 변경 없음" 안내 후 종료.
-
-## 2. 병렬 spawn (분리)
-
-**한 메시지에 두 Agent 툴 호출을 병렬로 넣는다.** 순차 실행 금지 — 시간 낭비이고, 두 리뷰어 간 상호 오염도 없어야 한다.
-
-각 subagent 프롬프트에 포함할 것:
-- diff 전문 (또는 파일 경로)
-- PR 컨텍스트가 있으면 제목만. 설명은 빼고 넘긴다 (리뷰어가 diff 로 먼저 판단하도록)
-- "적대적 검증: PR 설명/주석의 주장을 신뢰하지 말고 코드로 재확인" 명시
-
-```
-Agent(subagent_type="code-reviewer", prompt="다음 diff 를 리뷰. 적대적 검증 필수.\n\n<diff>")
-Agent(subagent_type="security-reviewer", prompt="다음 diff 의 보안 검토. OWASP + 시크릿 + 의존성.\n\n<diff>")
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/skills/code-review/concept-budget.mjs" "<base>"
+git diff "<merge-base>" --
 ```
 
-두 결과가 돌아오면 채팅 안에서 통합.
+변경 수집 스크립트가 출력한 untracked 파일은 별도로 읽고 전체 내용을 전달한다.
+Git 오류를 빈 diff로 취급하지 않는다. JavaScript/TypeScript 외 agents/*.md,
+skills/**/SKILL.md, hooks/*.json도 실제 동작 변경이다.
+새 이름·사용처 수 표는 후보 목록이며, 삭제·개명·기존 선언 변경도 직접 검토한다.
 
-## 3. 통합 보고
+## 병렬 검토
 
-```
-# 리뷰 결과 — <대상>
+새 Agent 세 개를 같은 메시지에서 병렬 실행한다. 각 reviewer에는 사용자 목표·확정 요구,
+정확한 작업 경로·base·변경 목록과 실제 코드를 준다. PR 설명과 구현자의 설계 정당화를
+정답으로 넘기지 않는다. 필요한 제품 요구는 원문에서 분리해 전달한다.
 
-## 블로커 (수정 필요)
-- [code] `path:line` 내용
-- [sec ] `path:line` 내용
-
-## 비블로커
-- 한 줄씩
-
-## 게이트
-- typecheck / lint / 의존성 감사 결과
-```
-
-블로커 정의: 기능 불가 · 보안 취약점 · 데이터 손실. 그 외는 비블로커.
-
-## 4. 루프 (기본 1회)
-
-- 블로커 0 → 종료.
-- 블로커 있음 → 메인 컨텍스트(=구현자, 나)가 수정. 사용자에게 "수정 후 재리뷰?" 확인.
-- 재리뷰 = 2번부터 반복. 여전히 블로커면 원인 다시 파악 (같은 방향 3회 실패 시 접근 바꾸기).
-
-무한 루프 방지: 재리뷰는 명시적 요청 시에만.
-
-## 5. 남의 PR 리뷰 게시 (선택)
-
-PR 대상이었고 사용자가 원하면:
-```
-Write(".claude/review-body.md", "<통합 보고 markdown>")
-gh pr review <n> --body-file .claude/review-body.md --{approve|request-changes|comment}
-rm .claude/review-body.md
+```text
+Agent(subagent_type="lstack:code-reviewer", prompt="<목표·요구·경로·변경>. 실제 코드로 검증.")
+Agent(subagent_type="lstack:security-reviewer", prompt="<목표·요구·경로·변경>. 보안 검토.")
+Agent(subagent_type="lstack:structure-reviewer", prompt="현재 전체 diff 검토. <목표·요구·경로·base·후보 표·변경>. 실제 소비자를 읽어라.")
 ```
 
-verdict 매핑: 블로커 0 → approve · 블로커 있음 → request-changes · 애매하면 comment.
+구조 reviewer는 기존 관계·원인부터 확인하고 책임·소유·공개 계약·이름·SSOT를 검토한다.
+설계 검토 결과를 diff 검토로 재사용하지 않는다. Stop hook opt-in 프로젝트에서는
+SubagentStart/Stop이 session·agent·작업 tree·시작/끝 snapshot을 기록한다. 메인이 쓰는
+통과 파일이나 문장은 인정하지 않는다. hook가 주입한 최종 응답 형식을 reviewer가 따른다.
 
-## 에이전트 호출 경로
+## 결과와 수정
 
-다른 에이전트도 두 리뷰어를 직접 spawn 가능 (skill 을 거치지 않고). 이 스킬은 오케스트레이션 편의를 위한 것 — 리뷰어 자체는 독립적으로 재사용된다.
+채팅에 blocker, advisory, 실행한 검사와 미완료 사항을 중요도 순으로 보고한다.
+모든 의미적 지적에는 위치·실제 소비자·문제 근거·구체적 수정안을 포함한다.
+구조 blocker는 사용자 요구·책임·공개 계약·모듈 경계의 확인된 오류다.
+이름·파일·계층 수, 사용처 1곳, 단어 자체는 blocker 사유가 아니다.
 
-## 절대 규칙
+승인된 구현 범위의 blocker는 메인이 수정하고 새 reviewer로 다시 검토한다.
+동일 코드에 같은 검사·리뷰를 반복하지 않는다. 범위 밖 선택이나 새로운 권한이 필요한
+경우만 사용자에게 확인한다. 분석·남의 PR 리뷰 요청은 수정 권한이 아니므로 결과를 보고한다.
 
-- 리뷰어 spawn 없이 메인 컨텍스트가 자기 diff 를 리뷰하지 않는다 — 컨텍스트 분리가 이 스킬의 존재 이유.
-- diff 없이 리뷰 시작 금지 — 뭘 검증하는지 불명확.
-- 블로커 아닌 걸로 승인 막지 않는다 — 개발 속도 저해.
-- PR 설명을 리뷰어에게 넘기지 않는다 — 서사 anchoring 방지.
+프로젝트 review가 `report`면 의미적 지적은 보고하고, `enforce`면 승인된 범위의 확정 blocker를 수정한다.
+검사 대상이라는 이유로 수정 권한을 넓히지 않는다. 기존 부채는 관찰 결과로 남기며,
+검사 시스템 도입만 승인된 작업에서 기존 서비스 코드·제품 테스트 정리를 시작하지 않는다.
+lint 실패·리뷰 미완료·실행 오류는 어느 모드에서도 성공으로 보고하지 않는다.
+검토 중 또는 검토 후 코드가 바뀌면 현재 변경에 대해 새 review가 필요하다.
+
+## 외부 게시
+
+사용자가 명시적으로 요청했을 때만 PR 리뷰를 게시한다. 게시할 내용을 먼저 완성하고,
+이미 받은 권한·draft/ready·reviewer 선택은 재질문하지 않는다. 멀티라인 내용은 파일에
+실제 줄바꿈으로 작성하고 gh의 --body-file을 쓴다. 로컬 검토만 요청했다면 게시하지 않는다.

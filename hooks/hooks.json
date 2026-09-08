@@ -1,8 +1,13 @@
 {
   "hooks": {
+    "SessionStart": [{ "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/verify-completion.mjs\"", "timeout": 30 }] }],
+    "SubagentStart": [{ "matcher": "^(lstack:)?structure-reviewer$", "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/verify-completion.mjs\"", "timeout": 30 }] }],
+    "SubagentStop": [{ "matcher": "^(lstack:)?structure-reviewer$", "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/verify-completion.mjs\"", "timeout": 30 }] }],
+    "Stop": [{ "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/verify-completion.mjs\"", "timeout": 150 }] }],
     "UserPromptSubmit": [
       {
         "hooks": [
+          { "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/verify-completion.mjs\"", "timeout": 30 },
           {
             "type": "command",
             "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/nobs-reminder.sh\"",

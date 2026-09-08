@@ -9,6 +9,22 @@
   Playwright 프로필의 코멘트 박스로 올린 뒤(제출하지 않는다) 삽입된 URL 만 회수한다.
   절차는 `skills/pr/screenshots.md`. `show` 는 as-is 캡처를 미리 남기도록 한 줄 추가.
 
+## 3.2.0 - 2026-09-08 (미발행)
+
+반복되는 구조 피드백을 책임·소유·공개 계약을 기준으로 독립 리뷰에 연결하고,
+프로젝트가 설정한 lint와 실제 변경 검토 증거를 완료 hook에서 확인하도록 보완했다.
+
+### Changed
+
+- **`structure-reviewer`**: 이름·책임·소비자·모듈 경계를 근거로 검토한다. 필요한 공통 책임과 불필요한 계층을 구분하며, 새 파일·이름 수 자체를 실패 기준으로 삼지 않는다.
+- **완료 hook**: 프로젝트의 lint argv를 실행하고, fresh 구조 diff 리뷰의 실제 시작·종료 이벤트와 현재 변경 snapshot을 연결한다. committed/staged/unstaged/untracked/deleted/renamed 경로와 부분 staged 상태를 다룬다.
+- **점진 적용**: `report`와 `enforce`를 모두 지원한다. 구체적인 lint 규칙과 기존 부채 정책은 프로젝트가 소유하며, lstack는 이를 복제하지 않는다.
+
+### Verification
+
+- 실제 Claude CLI 통합 E2E에서 리뷰 누락 차단과 fresh 구조 리뷰 완료 증거를 확인했다.
+- 복구된 검사 코드로 `npm test` 41/41을 재실행 통과했다.
+
 ## 3.1.0 - 2026-08-24
 
 ### Breaking

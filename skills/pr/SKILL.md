@@ -34,16 +34,39 @@ diff 가 테스트를 건드리면 push 전에 change-detector 테스트를 훑�
 - 후보를 근거와 함께 채팅에 제시하고 제거·수정 여부를 **묻는다**. 임의 삭제 금지.
 - 최종 판정은 맥락 판단이다 — 애매하면 KEEP.
 
-## 구조 스캔 (의도 8)
+## 게이트 (의도 8)
 
-push 전에 전체 branch diff 를 구조 관점으로 훑는다:
+push 전에 **기계가 판정하는 것부터** 돌린다. 눈으로 훑는 스캔은 "괜찮아 보인다" 로 끝나서
+같은 지적이 리뷰에서 반복된다.
 
-- 새 코드가 사람의 이해 단위와 1:1 대응하는 모듈/파일에 놓였는가
-- 기존 파일에 덧붙여 응집도가 깨지거나 모듈 경계가 흐려진 곳은 없는가
-- 필요한 선행 리팩토링을 미룬 흔적(어색한 우회 · 중복)은 없는가
+1. .lstack.json opt-in 프로젝트는 설정한 lint 명령과 실제 fresh 구조 diff 검토를 확인한다:
 
-findings 는 채팅에 인라인으로 보고하고, 수정 후 올릴지 그대로 올릴지 **묻는다**. 임의 수정 금지.
-발견 없음이면 한 줄로 넘어간다.
+   ```bash
+   node "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/verify-completion.mjs" check
+   ```
+
+   검사 대상은 /start에서 register한 worktree다. LSTACK_SESSION_ID가 없으면 SessionStart
+   연결부터 확인한다. 읽기전용 턴 skip과 Stop 반복 종료는 PR 통과 증거가 아니다.
+   check가 실패하면 승인된 변경 범위에서 원인을 해결한다. 현재 변경의 리뷰가 없으면 fresh structure-reviewer를
+   실행하고, 코드가 바뀌면 새 리뷰를 받는다. report의 의미적 지적은 사용자에게 보고하고
+   enforce의 확정 blocker는 승인된 범위에서 수정한다. 실행 오류·리뷰 미완료는 두 모드 모두 차단한다.
+   설정이 없는 프로젝트는 저장소의 필수 lint·검증 명령을 실행하고 결과를 보고한다.
+   검사 범위는 수정 권한이 아니다. 기존 부채 보고를 신규 위반 차단과 구분하고, 검사 시스템
+   도입만 승인됐다면 기존 서비스 코드·제품 테스트를 수정하지 않는다. 검사 명령·적용 범위의
+   오류는 검사 시스템에서 고치고, 범위 밖 문제는 미해결로 보고한다.
+2. 변경 목록과 **새 이름 후보**를 확인한다:
+
+   ```bash
+   node "${CLAUDE_PLUGIN_ROOT}/skills/code-review/concept-budget.mjs" "<base_branch>"
+   ```
+
+   표는 `/start`에서 합의한 책임·소유 관계와 비교할 후보 목록이다. 숫자 자체로 실패시키거나
+   새 이름마다 사용자 승인을 요구하지 않는다. 삭제·개명·기존 선언 변경·untracked도 읽는다.
+   예상과 다른 책임·공개 계약·모듈 경계는 독립 reviewer가 실제 소비자로 확인한다.
+   사용자 목표나 합의 범위를 바꾸는 선택만 사용자에게 확인한다.
+
+`/code-review`가 세 reviewer를 fresh context로 실행한다. opt-in 프로젝트의 구조 diff 검토는
+선택 사항이 아니다. 설계 검토는 현재 코드의 diff 검토를 대신하지 않는다.
 
 ## 생성
 
@@ -61,6 +84,8 @@ gh pr create --assignee @me --reviewer <선택> \
 - `gh pr edit` deprecation 우회: assignee · reviewer 는 `create` 플래그로 **한 번에** 넣는다.
   사후 수정이 필요하면 `gh api` 로 patch.
 - 생성 후 PR URL 을 보고한다.
+- 리베이스·충돌 해결로 코드가 바뀌면 push 전에 현재 변경을 다시 검사한다.
+- 커밋은 사용자 허락을 받은 경우에만 한다. PR 요청으로 기존 세션의 커밋 허락을 추정하지 않는다.
 
 ## 규칙
 
