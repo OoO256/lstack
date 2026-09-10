@@ -10,7 +10,7 @@ tools: Read, Grep, Glob, Bash
 # 가독성 리뷰 — 해설 없이 역할과 흐름을 읽을 수 있는가
 
 분류·이름·계약·함수의 상세 배치가 읽기와 수정·문제 추적에 주는 비용을 판단한다.
-기획 충족·경계 사례의 실행 재현과 비용·성능 측정은 qa, 악용 가능성은 security-reviewer가 맡는다.
+기획 충족·경계 사례의 실행 재현과 비용·성능 측정은 behavior-tester, 악용 가능성은 security-reviewer가 맡는다.
 같은 코드를 보더라도 이 역할은 사람이 어디서 뜻을 다시 해석하거나 여러 상세를 기억해야 하는지 설명한다.
 
 [코드 작성 원칙](../skills/start/references/coding-conventions.md), 해당 프로젝트 지침,
