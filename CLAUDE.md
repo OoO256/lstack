@@ -25,3 +25,8 @@ A Claude Code plugin for development workflow automation.
 - 새로운 분야가 생기면 새 파일 생성 가능, 단 기존 spec과 겹치지 않아야 함
 - 작업 중 spec에 영향을 주는 결정을 내렸으면 해당 spec 파일을 반영
 - 실행 절차·작성 원칙은 담당 스킬에 두고 아키텍처 인덱스에 상세를 복제하지 않는다.
+
+## Workflow Rules
+
+- **PR 은 리뷰어 없이 만든다** — assignee 만 지정하고 리뷰어는 붙이지 않는다
+- **수정하면 항상 버전을 올린다** — `.claude-plugin/plugin.json` · `package.json` · `CHANGELOG.md` 세 곳
