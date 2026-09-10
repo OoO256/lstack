@@ -2,7 +2,7 @@
 name: pr
 description: |
   Use when the user says "/pr", "푸시", "code 올려", "pr 올려", "pr 만들어", or an approved
-  change is verified and ready to share. Commit and push reviewed changes to the work branch.
+  change is ready to share. Commit and push scoped changes with actual verification status.
   Preserve an existing PR's settings; when creating one, ask unresolved draft/ready and reviewer
   choices, assign the user, and derive its description from handoff.md.
 ---
@@ -46,48 +46,18 @@ diff 가 테스트를 건드리면 push 전에 change-detector 테스트를 훑�
 - 후보를 근거와 함께 채팅에 제시하고 제거·수정 여부를 **묻는다**. 임의 삭제 금지.
 - 최종 판정은 맥락 판단이다 — 애매하면 KEEP.
 
-## PR 게시 전 검사
+## PR 게시 전 확인
 
 `align`에서 합의한 동작·수정 범위와 현재 변경을 비교한다. 아직 합의하지 않은 변경이
 있으면 해당 부분을 먼저 맞춘다. 사전 합의가 없었다면 지금의 설명을 과거 합의로 기록하지 않는다.
-구현 후 코드·구조·보안 리뷰와 최종 코드 검증 결과를 확인한다.
+실제로 수행한 동작 확인·검사·리뷰 결과와 미확인 사항을 구분한다.
 여러 피드백을 반영한 작업이면 요청 항목마다 실제 변경과 확인 근거를 대조한다.
 일부만 끝났으면 완료한 항목과 남긴 항목·이유를 나눠 보고한다. 남은 요구를 임의로
 후속 작업에 넣고 전체 반영이 끝난 것처럼 보고하지 않는다.
 
-push 전에 **기계가 판정하는 것부터** 돌린다. 눈으로 훑는 스캔은 "괜찮아 보인다" 로 끝나서
-같은 지적이 리뷰에서 반복된다.
-
-1. .lstack.json opt-in 프로젝트는 설정한 lint 명령과 실제 fresh 구조 diff 검토를 확인한다:
-
-   ```bash
-   node "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/check-lint-and-review.mjs" check
-   ```
-
-   검사 대상은 /start에서 register한 worktree다. LSTACK_SESSION_ID가 없으면 SessionStart
-   연결부터 확인한다. 읽기전용 턴 skip과 Stop 반복 종료는 PR 통과 증거가 아니다.
-   check가 실패하면 승인된 변경 범위에서 원인을 해결한다. 현재 변경의 리뷰가 없으면 fresh structure-reviewer를
-   실행하고, 코드가 바뀌면 새 리뷰를 받는다. report의 의미적 지적은 사용자에게 보고하고
-   enforce의 확정 blocker는 승인된 범위에서 수정한다. 실행 오류·리뷰 미완료는 두 모드 모두 차단한다.
-   설정이 없는 프로젝트는 저장소의 필수 lint·검증 명령을 실행하고 결과를 보고한다.
-   검사 범위는 수정 권한이 아니다. 기존 부채 보고를 신규 위반 차단과 구분하고, 검사 시스템
-   도입만 승인됐다면 기존 서비스 코드·제품 테스트를 수정하지 않는다. 검사 명령·적용 범위의
-   오류는 검사 시스템에서 고치고, 범위 밖 문제는 미해결로 보고한다.
-   설정 작성은 [프로젝트 설정](../../hooks/project-config.md), 실행 결과와 오류 해석은
-   [lint·리뷰 확인](../../hooks/lint-and-review.md)을 읽는다.
-2. 변경 목록과 **새 이름 후보**를 확인한다:
-
-   ```bash
-   node "${CLAUDE_PLUGIN_ROOT}/skills/reviewer/scripts/collect-review-changes.mjs" "<base_branch>"
-   ```
-
-   표는 `/align`에서 합의한 책임·소유 관계와 비교할 후보 목록이다. 숫자 자체로 실패시키거나
-   새 이름마다 사용자 승인을 요구하지 않는다. 삭제·개명·기존 선언 변경·untracked도 읽는다.
-   예상과 다른 책임·공개 계약·모듈 경계는 독립 reviewer가 실제 소비자로 확인한다.
-   사용자 목표나 합의 범위를 바꾸는 선택만 사용자에게 확인한다.
-
-`/reviewer`가 세 reviewer를 fresh context로 실행한다. opt-in 프로젝트의 구조 diff 검토는
-선택 사항이 아니다. 설계 검토는 현재 코드의 diff 검토를 대신하지 않는다.
+lint와 `/reviewer`는 사용자가 직접 실행하거나 요청할 때 수행한다. PR 게시의 자동 단계로
+실행하거나 별도의 완료 기록을 요구하지 않는다. 실행하지 않았다면 PR에 미실행으로 적는다.
+기존 프로젝트의 필수 검사·CI·브랜치 보호 규칙은 그대로 존중하며 실패를 통과로 바꾸지 않는다.
 
 ## 생성
 
