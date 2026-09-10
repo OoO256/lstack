@@ -1,39 +1,44 @@
 ---
 name: compound
 description: |
-  Use when the user says "/compound", or automatically just before /close.
-  Retrospects on the instructions the user gave this session, identifies what
-  could have been automated into the harness (skill/hook/guide), and proposes it.
-  Proposal only — does not implement automatically.
+  Use for /compound, when recording implementation feedback before sharing work, and before /close.
+  Preserve concrete corrections, propose scoped improvements, and check recurrence in later work.
+  Recording is not approval to change harness rules; read-only requests stay read-only.
 ---
 
-# compound — 하니스 자동화 회고 (제안만)
+# compound — 피드백을 다음 작업의 기준으로 연결한다
 
-이번 세션에서 사용자가 반복적으로 / 수동으로 준 지시를 돌아보고,
-lstack 하니스로 자동화할 수 있었던 것을 찾아 **제안**한다. 자동으로 구현하지 않는다.
-`/close` 직전에 자동 발동한다.
+사용자가 같은 구조·이름·읽기 방식을 다시 교정하지 않도록 근거를 남기고 개선안을 제안한다.
+[피드백 기록·재사용](references/feedback.md)을 읽는다. 기록과 재사용은 이 스킬의 절차이며,
+항상 실행되는 hook나 모델 재학습이 아니다. 규칙 변경·제품 리팩토링은 별도 구현 승인 범위에서만 한다.
 
-## 1. 회고
-이번 대화에서 사용자가 준 지시를 훑어 아래를 찾는다:
-- 반복해서 교정한 것 (매번 같은 요청)
-- 수동으로 돌린 명령 (스킬이 대신 발동할 수 있던 것)
-- 빠져서 사용자가 채운 단계
+## 교정이 생겼을 때
 
-## 2. 제안
-찾은 것마다 한 줄 제안 (채팅 인라인):
-```
-지시: <반복된 지시 요약>
-자동화: <skill | hook | guide 수정> — <무엇을 어떻게>
-```
-자동화할 반복 패턴이 없으면 "없음" 이라고 짧게 보고하고 넘어간다.
+구현 작업에서 의미 있는 교정이 나오면 현재 작업에 반영할 요구와 향후 일반화 후보를 구분한다.
+현재 코드·예상과 실제의 차이·사용자 근거를 확보하고, PR 공유나 인계 전에 기존 handoff에
+최신 결론을 남긴다. 매 발화마다 파일을 만들거나 기록 확인을 위해 사용자를 중단시키지 않는다.
+질문·리뷰만 요청받았거나 기록을 원하지 않으면 채팅에서 정리하고 파일을 쓰지 않는다.
 
-## 3. (선택) 사용자가 수락하면
-사용자가 특정 제안을 구현하라고 하면 **그때** harness-sage 를 격리 worktree 로 dispatch 한다.
-`skills/compound/references.md` 의 레퍼런스 플러그인에서 패턴을 참고할 수 있다.
+## 회고와 제안
 
-```
-Agent({ subagent_type: "lstack:harness-sage", isolation: "worktree",
-        prompt: <수락된 제안 + 현재 lstack 구조> })
-```
+현재 작업의 교정과 이미 적용 중인 기준을 비교한다. 반복 지적뿐 아니라 빠진 설명·수동 절차도 본다.
+같은 지적이 다시 나오면 원칙을 더 쓰기 전에 다음 중 원인을 구분한다:
 
-수락 전엔 구현하지 않는다.
+- 관련 기준을 읽지 않았음 → start·reviewer의 참조 경로 보완.
+- 기준을 읽었지만 이 사례를 잘못 해석함 → 구체적 승인 사례·적용 범위·반례 보완.
+- 기준은 맞지만 구현이 벗어남 → 해당 구현·검토 지점의 수정 제안.
+- 기준 자체가 현재 요구에 맞지 않음 → 기존 원칙의 축소·교체·폐기 제안.
+
+채팅에서는 중요한 개선 후보만 근거·바꿀 위치·기대 효과로 짧게 제안한다.
+이미 있는 원칙을 새 문구로 덧붙이지 않는다. 새 규칙이 필요하지 않으면 그 사실만 보고한다.
+사용자가 승인하지 않은 일반화는 다음 작업에서 강제하지 않는다.
+
+## 승인 후 반영과 확인
+
+명시적으로 승인된 개선만 담당 문서·스킬에 반영한다. 사용자 직접 작성 요구가 있으면 메인이 쓰고,
+위임이 허용된 독립 작업이면 harness-sage에 근거·범위·승인을 전달할 수 있다.
+새 의존성·hook·외부 게시·설치 변경까지 승인받았다고 해석하지 않는다.
+
+다음 관련 작업에서 기준을 실제로 읽고 적용했는지, 같은 교정이 재발했는지 확인한다.
+사용자의 실제 코드 예측·버그 추적 답변과 재교정을 근거로 판단하며, 침묵·PR 머지·테스트 통과를
+이해 개선의 증거로 쓰지 않는다. 비교할 사례가 없으면 효과 미검증으로 남긴다.

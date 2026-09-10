@@ -28,7 +28,7 @@ lstack는 사용자가 코드를 읽고 변경·장애 원인을 추적할 수 �
 | [reviewer](../../skills/reviewer/SKILL.md) | 요청한 설계·코드·구조·보안 독립 검토 |
 | [pr](../../skills/pr/SKILL.md) | 실제 확인 결과·합의 반영 확인, 커밋·푸시와 PR 공유 |
 | [show](../../skills/show/SKILL.md) | 필요한 UI·실제 동작 확인 |
-| [compound](../../skills/compound/SKILL.md) / [close](../../skills/close/SKILL.md) | 개선 제안 / 작업 종료 |
+| [compound](../../skills/compound/SKILL.md) / [close](../../skills/close/SKILL.md) | 교정 기록·개선 제안·재발 확인 / 작업 종료 |
 | [handoff](../../skills/handoff/SKILL.md) | 합의·결과·한계를 다음 작업에 인계 |
 | [nobs](../../skills/nobs/SKILL.md) / [explain](../../skills/explain/SKILL.md) | 평이한 설명 / 기존 코드 이해 |
 | [call-as-codex](../../skills/call-as-codex/SKILL.md) | 별도 Codex 호출 mechanics |
@@ -39,6 +39,8 @@ lstack는 사용자가 코드를 읽고 변경·장애 원인을 추적할 수 �
 [코드 작성 원칙](../../skills/start/references/coding-conventions.md)은 start,
 [행동 테스트 판별 기준](../../skills/pr/change-detector-tests.md)은 pr이 소유한다.
 프로젝트의 분류·용어·계약은 해당 책임의 문서를 참조한다. 공통 원칙 문서로 상세를 다시 모으지 않는다.
+[피드백 기록·재사용](../../skills/compound/references/feedback.md)은 compound가 소유하며,
+start·reviewer는 관련 승인 기준을 읽고 pr·handoff는 교정 근거와 미해결 지점을 남긴다.
 
 ## 플러그인 경계
 
