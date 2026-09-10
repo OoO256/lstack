@@ -12,7 +12,7 @@ lstack는 사용자가 코드를 읽고 변경·장애 원인을 추적할 수 �
   → /align: 실제 코드 이해 확인
   → 마무리할 때 /compound → /close
 
-사용자 요청 시: lint / /code-review / /show
+사용자 요청 시: lint / /reviewer / /show
 낯선 기존 코드 설명: /explain
 ```
 
@@ -25,7 +25,7 @@ lstack는 사용자가 코드를 읽고 변경·장애 원인을 추적할 수 �
 |---|---|
 | [start](../../skills/start/SKILL.md) | 격리·인터뷰·기존 구조와 원인 조사·작은 변경안 |
 | [align](../../skills/align/SKILL.md) | 사용자 분류·대표 코드 합의와 구현 후 코드 이해 확인 |
-| [code-review](../../skills/code-review/SKILL.md) | 요청한 코드·보안 독립 검토 |
+| [reviewer](../../skills/reviewer/SKILL.md) | 요청한 설계·코드·구조·보안 독립 검토 |
 | [pr](../../skills/pr/SKILL.md) | 실제 확인 결과·합의 반영 확인, 커밋·푸시와 PR 공유 |
 | [show](../../skills/show/SKILL.md) | 필요한 UI·실제 동작 확인 |
 | [compound](../../skills/compound/SKILL.md) / [close](../../skills/close/SKILL.md) | 개선 제안 / 작업 종료 |
@@ -34,6 +34,7 @@ lstack는 사용자가 코드를 읽고 변경·장애 원인을 추적할 수 �
 | [call-as-codex](../../skills/call-as-codex/SKILL.md) | 별도 Codex 호출 mechanics |
 | [harness-sage](../../agents/harness-sage.md) | 수락된 하니스 개선 구현 |
 | [code-reviewer](../../agents/code-reviewer.md) / [security-reviewer](../../agents/security-reviewer.md) | 기능·로직 / 보안 독립 검토 |
+| [structure-reviewer](../../agents/structure-reviewer.md) | 합의한 분류·이름·계약과 실제 읽기 방식 대조 |
 
 [코드 작성 원칙](../../skills/start/references/coding-conventions.md)은 start,
 [행동 테스트 판별 기준](../../skills/pr/change-detector-tests.md)은 pr이 소유한다.
