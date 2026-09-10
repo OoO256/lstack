@@ -22,8 +22,9 @@ description: |
 5. **desc = 인간용 (의도 7)** — 방침 중심, 독립 작업별 그룹화, as-is → to-be, 평이한 언어,
    비관여자도 이해 가능, 남은 한계 명시.
    handoff.md 4섹션(배경 · 해결 방법 · 결과 · 한계와 후속)을 소스로 재사용한다.
-6. **UI 변경이면 as-is/to-be 캡처 첨부** — [PR 스크린샷 첨부](./screenshots.md) 절차로
-   GitHub 첨부 CDN 에 올리고 본문에 URL 만 넣는다. 이미지를 레포에 커밋하지 않는다.
+6. **UI 변경이면 as-is/to-be 미디어 첨부** — [PR 미디어 첨부](./media-attachments.md) 절차로
+   단순한 화면 변화는 JPG, 상호작용·애니메이션 변화는 짧은 MP4 또는 GIF 로 보여 준다.
+   GitHub 첨부 저장소에 올리고 본문에 URL 만 남긴다. 미디어 파일은 레포에 커밋하지 않는다.
 
 ## 테스트 변경 스캔 (change-detector 회피)
 
@@ -54,7 +55,8 @@ git fetch origin
 git rebase "origin/<base_branch>"   # 충돌 시 멈추고 사용자에게 보고, 임의 해결 금지
 git push -u origin <branch>
 gh pr create --assignee @me --reviewer <선택> \
-  --title "<goal 한 줄>" --body-file <desc>   # draft 면 --draft 추가
+  --title "<goal 한 줄>" --body-file <desc> \
+  [--attach <media> ...]                       # draft 면 --draft 추가
 ```
 
 - `base_branch` 는 `skills/start/projects/<cwd-basename>.md` frontmatter 에서 읽는다. 없으면 `main`.
