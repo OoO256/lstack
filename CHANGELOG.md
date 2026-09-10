@@ -4,10 +4,10 @@
 
 ### Added
 
-- **`pr` PR 스크린샷 첨부**: UI 변경의 as-is/to-be 캡처를 GitHub 첨부 CDN(`user-attachments`)에
-  올리고 본문에는 URL 만 넣는다 — 이미지가 레포에 쌓이지 않는다. 업로드 API 가 없어 로그인된
-  Playwright 프로필의 코멘트 박스로 올린 뒤(제출하지 않는다) 삽입된 URL 만 회수한다.
-  절차는 `skills/pr/screenshots.md`. `show` 는 as-is 캡처를 미리 남기도록 한 줄 추가.
+- **`pr` PR 미디어 첨부**: UI 변경의 as-is/to-be를 GitHub 첨부 저장소에 올리고 본문에는 URL 만
+  넣는다. 정적인 변화는 가벼운 JPG, 동작 변화는 짧은 MP4 또는 GIF 로 보여 준다. `gh 2.99+`의
+  `--attach`가 본문의 로컬 참조를 업로드 URL 로 치환하며, 부분 실패 시 생성된 PR 을 찾아 누락
+  파일만 보완한다. 절차는 `skills/pr/media-attachments.md`이고 미디어는 레포에 쌓이지 않는다.
 
 ## 3.1.0 - 2026-08-24
 
