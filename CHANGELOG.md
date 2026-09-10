@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### 코드 이해 중심 워크플로우 — PR #26–#30
+
+- `start` → `align`에서 사용자 분류·이름·대표 코드를 합의하고, 위임·재개와 작은 구현 단위에도
+  적용 원칙·합의를 전달·대조한다. `PRINCIPLE.md`의 내용은 담당 스킬로 옮긴다.
+- `/code-review`는 `/reviewer`로 개명한다. code-reviewer를 제거하고 readability-reviewer·
+  behavior-tester·security-reviewer로 역할을 나눈다. lint·독립 리뷰는 요청할 때만 실행한다.
+- 피드백의 적용 범위·승인 여부, 결정 이유·버린 대안·남은 고민을 handoff에 보존하고 다음 작업에서 재사용한다.
+- **논의 재개:** Codex 세션 ID `01a07fe6-b8ef-7862-9290-925399234add`.
+  [공통 배경과 선택 이유](docs/worklogs/2026-09-11-align-code-reading/handoff.md)에서 시작하고,
+  [최신 역할 분리·구현 전후 원칙 적용과 남은 질문](docs/worklogs/2026-09-11-readability-and-qa/handoff.md)으로 이어간다.
+  세션 원문에 접근하지 못해도 두 기록에서 판단 맥락을 읽을 수 있다. 실제 준수 효과·독립 실행은 아직 미검증이다.
+
 ### Added
 
 - **`pr` PR 스크린샷 첨부**: UI 변경의 as-is/to-be 캡처를 GitHub 첨부 CDN(`user-attachments`)에
