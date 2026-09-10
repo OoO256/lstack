@@ -1,5 +1,8 @@
 # 합의한 분류와 읽기 방식을 독립 리뷰한다
 
+현재 구성은 readability-reviewer·behavior-tester·security-reviewer다. 아래는 최초 역할 분리의 근거이며,
+code-reviewer 제거와 구조 리뷰 개명의 이유는 [후속 결정](../2026-09-11-readability-and-qa/handoff.md)을 읽는다.
+
 ## 배경
 
 [사용자 경험과 공통 선택 이유](../2026-09-11-align-code-reading/handoff.md)를 먼저 읽는다.
