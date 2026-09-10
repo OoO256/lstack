@@ -1,90 +1,46 @@
 # Architecture
 
-lstack 플러그인의 구조와 워크플로우. 고정 오케스트레이터·검증 게이트는 없다 —
-양끝을 감싸는 능동 스킬 + 개발 가이드(`PRINCIPLE.md`)로 얇게 구성한다.
-상세 규칙은 각 스킬/가이드 파일이 SSOT.
+lstack는 사용자가 코드를 읽고 변경·장애 원인을 추적할 수 있도록 설계·합의·구현·공유를 연결한다.
+이 문서는 전체 흐름과 책임의 인덱스다. 상세 절차와 작성 원칙은 담당 스킬에서 읽는다.
 
-## Plugin Structure
+## 작업 흐름
 
-```
-lstack/
-├── .claude-plugin/plugin.json   # 플러그인 매니페스트
-├── agents/                       # 에이전트 정의 (.md) — harness-sage 만
-├── skills/                       # 스킬 정의 (디렉토리/SKILL.md)
-├── hooks/hooks.json              # nobs-reminder 만
-├── docs/
-│   ├── spec/                     # 분야별 SSOT (PRINCIPLE, ARCHITECTURE)
-│   └── worklogs/                 # 프로젝트 단위 작업 디렉토리 (handoff.md)
-└── tests/
+```text
+/start: 격리 → 인터뷰 → 기존 코드·원인 조사 → 설계 준비
+  → /align: 사용자 분류 확인 → 구조·인터페이스·대표 코드 합의
+  → 구현·동작 확인 → 커밋·푸시·PR 공유
+  → /align: 실제 코드 이해 확인
+  → 마무리할 때 /compound → /close
+
+사용자 요청 시: lint / /code-review / /show
+낯선 기존 코드 설명: /explain
 ```
 
-## 라이프사이클
+새 분류·패턴과 바뀐 범위만 합의하며, 이미 확인한 이해를 반복 시험하지 않는다.
+사용자 이해와 구현 허락은 별개다. lint·독립 리뷰 완료를 강제하는 hook는 두지 않는다.
 
-```
-/start → 구현 → self-test(unit·integ) → /show(①/②) → /pr → /compound(자동·제안만) → /close
-                                                              /explain = 남의 PR/코드 이해할 때 아무 때나
-                                                              /code-review = 적대적 리뷰 (자기·남 코드 모두)
-```
+## 책임과 위치
 
-스킬은 "반복 명령 묶음"이고, 중간 구현은 메인 컨텍스트가 `PRINCIPLE.md` 가이드를 지닌 채
-판단으로 진행한다. arc 는 기본 흐름일 뿐 강제 게이트가 아니다.
+| 구성 | 책임 |
+|---|---|
+| [start](../../skills/start/SKILL.md) | 격리·인터뷰·기존 구조와 원인 조사·작은 변경안 |
+| [align](../../skills/align/SKILL.md) | 사용자 분류·대표 코드 합의와 구현 후 코드 이해 확인 |
+| [code-review](../../skills/code-review/SKILL.md) | 요청한 코드·보안 독립 검토 |
+| [pr](../../skills/pr/SKILL.md) | 실제 확인 결과·합의 반영 확인, 커밋·푸시와 PR 공유 |
+| [show](../../skills/show/SKILL.md) | 필요한 UI·실제 동작 확인 |
+| [compound](../../skills/compound/SKILL.md) / [close](../../skills/close/SKILL.md) | 개선 제안 / 작업 종료 |
+| [handoff](../../skills/handoff/SKILL.md) | 합의·결과·한계를 다음 작업에 인계 |
+| [nobs](../../skills/nobs/SKILL.md) / [explain](../../skills/explain/SKILL.md) | 평이한 설명 / 기존 코드 이해 |
+| [call-as-codex](../../skills/call-as-codex/SKILL.md) | 별도 Codex 호출 mechanics |
+| [harness-sage](../../agents/harness-sage.md) | 수락된 하니스 개선 구현 |
+| [code-reviewer](../../agents/code-reviewer.md) / [security-reviewer](../../agents/security-reviewer.md) | 기능·로직 / 보안 독립 검토 |
 
-## Skills
+[코드 작성 원칙](../../skills/start/references/coding-conventions.md)은 start,
+[행동 테스트 판별 기준](../../skills/pr/change-detector-tests.md)은 pr이 소유한다.
+프로젝트의 분류·용어·계약은 해당 책임의 문서를 참조한다. 공통 원칙 문서로 상세를 다시 모으지 않는다.
 
-| 스킬 | 경로 | 역할 |
-|------|------|------|
-| `start` | `skills/start/SKILL.md` | 진입점. origin/main → worktree 새 브랜치 + 의도 인터뷰 + 가이드 로드 + 구조 판단(의도 8) + 채팅 인라인 계획 제시. resume 자동 판별. 프로젝트 기본값 `skills/start/projects/<basename>.md` |
-| `show` | `skills/show/SKILL.md` | 동작 확인. ① 사용자 수동 테스트 / ② agent e2e 검증, Chrome CDP |
-| `pr` | `skills/pr/SKILL.md` | code 올리기. draft/ready 질문·본인 assign·이전 PR 기반 reviewer 질문·handoff.md 작성→인간용 desc·테스트 변경 change-detector 스캔·구조 스캔(의도 8) |
-| `explain` | `skills/explain/SKILL.md` | 남의 PR/코드 이해 돕기 (대화). 구조/데이터흐름 + 사용자입력→클라→백→영속화 리뷰 순서. 게이트 아님 |
-| `code-review` | `skills/code-review/SKILL.md` | 적대적 리뷰 루프. code-reviewer + security-reviewer 를 fresh context 로 병렬 spawn. 자기/남의 코드 모두 |
-| `compound` | `skills/compound/SKILL.md` | 세션 지시 회고 → 하니스 자동화 제안 (제안만, close 직전 자동) |
-| `close` | `skills/close/SKILL.md` | 완료 확인 + worktree 닫기 |
-| `handoff` | `skills/handoff/SKILL.md` | handoff.md 구조 SSOT + 작성 시점. `/handoff` 로 직접 호출 가능 |
-| `nobs` | `skills/nobs/SKILL.md` | 사용자에게 말하는 방식 SSOT — 결론 먼저 · 신규 용어 금지 · 최대한 짧게 · 중요도 순. `nobs-reminder` 훅이 매 턴 압축본을 주입 |
-| `call-as-codex` | `skills/call-as-codex/SKILL.md` | on-demand Codex 위임 mechanics 래퍼 (bare) |
+## 플러그인 경계
 
-## Agents
-
-| Agent | 경로 | 역할 |
-|-------|------|------|
-| harness-sage | `agents/harness-sage.md` | compound 가 수락된 개선을 구현할 때만. worktree 격리 후 issue/PR 생성 |
-| code-reviewer | `agents/code-reviewer.md` | 적대적 코드 리뷰 (명세·로직·품질). Write/Edit 금지. `code-review` 스킬이 spawn 또는 직접 호출 |
-| security-reviewer | `agents/security-reviewer.md` | OWASP·시크릿·의존성 감사. Write/Edit 금지. `code-review` 스킬이 spawn 또는 직접 호출 |
-
-**레이어 분리:** `call-as-codex`(skill) = Codex 호출 mechanics (프롬프트 내용 모름) ·
-`agents/<name>.md` = 프롬프트 파일 (호출 방식 모름). 호출자가 둘을 조합.
-
-## Hooks
-
-| Hook | 타입 | 동작 |
-|------|------|------|
-| nobs-reminder | UserPromptSubmit | 매 턴 nobs 응답 규칙 한 줄 주입. 스킬 호출은 모델 재량이라 "항상"이 보장되지 않아 훅으로 고정. 전문은 `skills/nobs/SKILL.md` |
-
-훅은 이것뿐이다. 워크플로우 게이트용 훅은 두지 않는다 (v2 방침).
-
-## 서브에이전트 위임 (의도 2)
-
-독립 서브태스크는 더 싼 모델의 서브에이전트로 병렬 위임한다 (예: `general-purpose`(sonnet),
-`Explore`). 프로젝트에 설치된 전문 에이전트가 있으면 활용. 태스크당 1커밋 권장.
-
-## handoff.md
-
-worklog 의 유일한 문서. 다음 사람(사람 · subagent · compact 이후의 나)에게 넘기는 인계장.
-구조·글쓰기 규칙은 `skills/handoff/` SSOT.
-
-구조(탑다운): `## 배경`(현재 상황 · 문제 · 원인) · `## 해결 방법`(as-is → to-be · 탑다운 설계 ·
-이해 단위 → 모듈 매핑) · `## 결과`(바뀐 것 · 작업 중 결정 · 검증 방법) ·
-`## 한계와 후속`(남은 리스크 · 후속 작업).
-
-- **계획은 문서로 만들지 않는다** — 채팅에 인라인으로 제시한다.
-- 작성 시점: subagent 위임 전 · PR 전 · compact 전 · `/handoff` 호출.
-- 파일 하나, 매번 덮어쓴다. 시점에 따라 빈 섹션이 생기는 건 정상 ("없음" 한 줄).
-- 상태머신·phase 매핑·AC 게이트 없음.
-
-## 스킬/프롬프트 작성 원칙 (하니스 자체를 수정할 때)
-
-- **책임은 구체적으로, 워크플로우는 얇게.** 절차에 마이크로매니징(임계값·도구·안티패턴 나열)을
-  넣지 않는다 — 방향은 책임으로 정하고 판단은 모델에 맡긴다.
-- **Fallback 없음.** mechanics 레이어(`call-as-codex`)가 실패하면 fallback 하지 않고
-  호출자(메인 컨텍스트)에게 에러를 그대로 보고한다.
+매니페스트는 `.claude-plugin/`, 실행 지침은 `skills/`, 독립 에이전트는 `agents/`에 둔다.
+[hook](../../hooks/hooks.json)는 nobs 알림만 담당한다. 작업 기록은 handoff 하나를 최신 상태로 유지한다.
+스킬은 책임과 판단 기준을 제공한다. 호출 mechanics의 실패는 호출자에게 그대로 전달하며 숨기지 않는다.
