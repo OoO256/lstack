@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.0.1 - 2026-09-14
+
+### Changed
+
+- **`pr` 생성·ready 분리**: 일반 PR 요청은 reviewer 없는 draft를 만들고, `pr ready`는
+  PR이 없으면 ready PR을 생성하고 draft가 있으면 ready로 전환한다. ready 요청의 reviewer는
+  최근 10개 PR 경향으로 자동 지정한 뒤 선택 근거와 수정 필요 여부를 보고한다.
+
 ## 4.0.0 - 2026-09-11
 
 ### Breaking · 코드 이해 중심 워크플로우 — PR #26–#30

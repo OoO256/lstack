@@ -1,22 +1,32 @@
 ---
 name: pr
 description: |
-  Use when the user says "/pr", "code 올려", "pr 올려", "pr 만들어" — creating a PR
-  for the current work. Always asks draft vs ready, assigns the user, checks the user's
-  recent PRs to suggest a reviewer, writes handoff.md for outside readers, and derives
-  a human-readable description from it.
+  Use when the user says "/pr", "code 올려", "pr 올려", "pr 만들어", or "pr ready" —
+  creating or readying a PR for the current work. A normal invocation creates a draft
+  without reviewers. An explicit ready request creates or converts a ready PR and selects
+  a reviewer from the user's recent PRs. Writes handoff.md before deriving the description.
 ---
 
 # pr — code 올리기
 
-내가 매번 치는 PR 명령을 대신 발동한다. 아래는 반드시 지킨다:
+내가 매번 치는 PR 명령을 대신 발동한다. 먼저 현재 브랜치의 PR 상태와 요청 모드를 구분한다:
 
-1. **draft or ready?** — 꼭 질문한다 (기본값 가정 금지).
-2. **본인 assign 필수** — PR author 를 assignee 로 등록.
-3. **reviewer 질문** — 내 최근 PR 들의 reviewer 를 확인해 후보를 제시하고 누구를 넣을지 묻는다:
-   ```bash
-   gh pr list --author @me --state all --limit 10 --json reviewRequests,reviews
-   ```
+```bash
+gh pr view --json number,isDraft,url,author,assignees,reviewRequests
+```
+
+| 현재 상태 | 일반 PR 요청 | 명시적인 `pr ready` 요청 |
+|---|---|---|
+| PR 없음 | 리뷰어 없는 draft PR 생성 | ready PR 생성 후 reviewer 자동 지정 |
+| draft PR | draft와 기존 설정 유지 | ready 전환 후 reviewer 자동 지정 |
+| ready PR | ready와 기존 설정 유지 | ready 유지. reviewer가 없을 때만 자동 지정 |
+
+`pr ready`가 아니면 draft/ready를 다시 묻지 않는다. `pr ready`는 ready 전환과 reviewer 지정을
+허락한 요청이다. 기존 reviewer는 제거하거나 교체하지 않는다.
+
+1. **본인 assign 필수** — PR author 를 assignee 로 등록.
+2. **reviewer 없는 draft** — 일반 요청으로 새 PR을 만들 때 reviewer를 조회·질문·지정하지 않는다.
+3. **ready reviewer 자동 선택** — `pr ready`이고 기존 reviewer가 없을 때만 아래 절차를 따른다.
 4. **handoff.md 작성** — desc 를 쓰기 전에 먼저 한다. desc 의 소스이므로
    순서가 뒤바뀌면 안 된다. `handoff` 스킬 구조·글쓰기 원칙으로 쓴다 (이미 있으면 갱신).
 5. **desc = 인간용** — 방침 중심, 독립 작업별 그룹화, as-is → to-be, 평이한 언어,
@@ -25,6 +35,21 @@ description: |
 6. **UI 변경이면 as-is/to-be 미디어 첨부** — [PR 미디어 첨부](./media-attachments.md) 절차로
    단순한 화면 변화는 JPG, 상호작용·애니메이션 변화는 짧은 MP4 또는 GIF 로 보여 준다.
    GitHub 첨부 저장소에 올리고 본문에 URL 만 남긴다. 미디어 파일은 레포에 커밋하지 않는다.
+
+## ready reviewer 선택
+
+현재 PR을 제외한 최근 10개 PR에서 실제 review와 review request를 함께 확인한다:
+
+```bash
+gh pr list --author @me --state all --limit 11 \
+  --json number,createdAt,reviewRequests,reviews
+```
+
+- 한 PR에서 같은 사람은 한 번만 센다. 본인과 자동화 계정은 제외한다.
+- 가장 많은 PR에 등장한 한 명을 고른다. 같으면 더 최근 PR에 등장한 사람을 고른다.
+- 유효한 후보가 없으면 ready PR 생성·전환 전에 멈추고, 근거가 없어 선택하지 못했다고 보고한다.
+- 지정 후 선택한 reviewer, 최근 10개 중 등장한 PR 수, 가장 최근 PR을 보고하고 수정할지 묻는다.
+- ready 전환과 reviewer 지정 중 일부만 성공하면 실제 PR 상태를 다시 확인해 부분 성공을 그대로 보고한다.
 
 ## 테스트 변경 스캔 (change-detector 회피)
 
@@ -53,7 +78,7 @@ findings 는 채팅에 인라인으로 보고하고, 수정 후 올릴지 그대
 전달한다. 실제 코드 이해 확인은 `align`이 담당하며, PR 게시나 검사 통과로 대신하지 않는다.
 기존 PR의 설정과 이미 받은 커밋·푸시 권한은 유지한다. 강제 푸시·머지는 별도 허락이 필요하다.
 
-## 생성
+## 생성과 ready 전환
 
 push 전에 최신 base 로 리베이스한다 — PR 이 뒤처진 base 를 향하지 않도록 (`/rebase` 와 동일):
 
@@ -61,19 +86,30 @@ push 전에 최신 base 로 리베이스한다 — PR 이 뒤처진 base 를 향
 git fetch origin
 git rebase "origin/<base_branch>"   # 충돌 시 멈추고 사용자에게 보고, 임의 해결 금지
 git push -u origin <branch>
+
+# 일반 PR 요청: reviewer 없는 draft
+gh pr create --draft --assignee @me \
+  --title "<goal 한 줄>" --body-file <desc> [--attach <media> ...]
+
+# PR 없음 + pr ready: 선택을 마친 뒤 ready PR 생성
 gh pr create --assignee @me --reviewer <선택> \
-  --title "<goal 한 줄>" --body-file <desc> \
-  [--attach <media> ...]                       # draft 면 --draft 추가
+  --title "<goal 한 줄>" --body-file <desc> [--attach <media> ...]
+
+# draft PR + pr ready: ready 전환 후 reviewer 요청
+gh pr ready <number>
+gh api --method POST "repos/{owner}/{repo}/pulls/<number>/requested_reviewers" \
+  -f "reviewers[]=<login>"
 ```
 
 - `base_branch` 는 `skills/start/projects/<cwd-basename>.md` frontmatter 에서 읽는다. 없으면 `main`.
 - 사용자가 stacked PR을 요청했다면 합의한 선행 브랜치를 base로 지정한다. 각 PR은 바로 앞
   브랜치 대비 변경만 포함하고, 선행 PR 머지 후 base·diff를 확인한다. 임의 강제 푸시는 하지 않는다.
-- `gh pr edit` deprecation 우회: assignee · reviewer 는 `create` 플래그로 **한 번에** 넣는다.
-  사후 수정이 필요하면 `gh api` 로 patch.
-- 생성 후 PR URL 을 보고한다.
+- 새 ready PR의 assignee · reviewer는 `create` 플래그로 한 번에 넣는다. 기존 PR의 reviewer는
+  `gh api`의 requested reviewers endpoint로 추가한다.
+- 생성·전환 후 PR URL과 draft/ready 상태를 다시 확인해 보고한다.
 
 ## 규칙
 
-- draft/ready · reviewer 는 **묻고** 정한다. 임의 결정 금지.
+- 일반 PR 요청은 draft, `pr ready` 요청은 ready다. 사전에 되묻지 않는다.
+- reviewer 선택은 최근 PR 근거로 실행한 뒤 보고하고, 수정이 필요한지 묻는다.
 - desc 에 "먼저 X 하고 그다음 Y" 식 작업 순서 나열 금지 — 방침 · 데이터 흐름 중심.

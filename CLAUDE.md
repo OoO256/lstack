@@ -28,5 +28,6 @@ A Claude Code plugin for development workflow automation.
 
 ## Workflow Rules
 
-- **PR 은 리뷰어 없이 만든다** — assignee 만 지정하고 리뷰어는 붙이지 않는다
+- **일반 PR 요청은 리뷰어 없는 draft로 만든다** — `pr ready` 요청에서만 최근 PR 경향으로
+  reviewer를 자동 지정하고, 지정 근거를 보고한 뒤 수정할지 묻는다
 - **수정하면 항상 버전을 올린다** — `.claude-plugin/plugin.json` · `package.json` · `CHANGELOG.md` 세 곳
