@@ -30,7 +30,7 @@ lstack는 사용자가 코드를 읽고 변경·장애 원인을 추적할 수 �
 | [show](../../skills/show/SKILL.md) | 필요한 UI·실제 동작 확인 |
 | [compound](../../skills/compound/SKILL.md) / [close](../../skills/close/SKILL.md) | 교정 기록·개선 제안·재발 확인 / 작업 종료 |
 | [handoff](../../skills/handoff/SKILL.md) | 합의·결과·한계를 다음 작업에 인계 |
-| [nobs](../../skills/nobs/SKILL.md) / [explain](../../skills/explain/SKILL.md) | 평이한 설명 / 기존 코드 이해 |
+| [nobs](../../skills/nobs/SKILL.md) / [explain](../../skills/explain/SKILL.md) | 평이한 문장 / 변경·기존 코드 설명 방식과 전체 diff의 작성 이유 연결 |
 | [call-as-codex](../../skills/call-as-codex/SKILL.md) | 별도 Codex 호출 mechanics |
 | [harness-sage](../../agents/harness-sage.md) | 수락된 하니스 개선 구현 |
 | [readability-reviewer](../../agents/readability-reviewer.md) | 분류·이름·계약·함수 흐름의 이해 비용 |
@@ -39,6 +39,8 @@ lstack는 사용자가 코드를 읽고 변경·장애 원인을 추적할 수 �
 
 [코드 작성 원칙](../../skills/start/references/coding-conventions.md)은 start,
 [행동 테스트 판별 기준](../../skills/pr/change-detector-tests.md)은 pr이 소유한다.
+[explain](../../skills/explain/SKILL.md)이 코드 설명 방식의 SSOT다.
+start·align·handoff·pr은 각 시점의 코드·합의·diff를 전달해 explain을 호출한다.
 프로젝트의 분류·용어·계약은 해당 책임의 문서를 참조한다. 공통 원칙 문서로 상세를 다시 모으지 않는다.
 [피드백 기록·재사용](../../skills/compound/references/feedback.md)은 compound가 소유하며,
 start·reviewer는 관련 승인 기준을 읽고 pr·handoff는 교정 근거와 미해결 지점을 남긴다.
