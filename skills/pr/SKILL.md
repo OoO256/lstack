@@ -22,6 +22,8 @@ description: |
 5. **desc = 인간용** — 방침 중심, 독립 작업별 그룹화, as-is → to-be, 평이한 언어,
    비관여자도 이해 가능, 남은 한계 명시.
    handoff.md 4섹션(배경 · 해결 방법 · 결과 · 한계와 후속)을 소스로 재사용한다.
+   [explain](../explain/SKILL.md)을 호출하고 최종 diff와 handoff를 전달한다.
+   설명 누락·변경을 반영한 handoff를 본문에 재사용한다. 설명 방식은 explain이 소유한다.
 6. **UI 변경이면 as-is/to-be 미디어 첨부** — [PR 미디어 첨부](./media-attachments.md) 절차로
    단순한 화면 변화는 JPG, 상호작용·애니메이션 변화는 짧은 MP4 또는 GIF 로 보여 준다.
    GitHub 첨부 저장소에 올리고 본문에 URL 만 남긴다. 미디어 파일은 레포에 커밋하지 않는다.
